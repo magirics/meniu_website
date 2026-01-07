@@ -15,6 +15,8 @@ import {
   CreditCard,
   LayoutTemplate,
   Users,
+  BookOpenText,
+  Code,
 } from "lucide-react"
 import Link from "next/link"
 import { Logo } from "@/components/logo"
@@ -39,6 +41,26 @@ const data = {
     avatar: "",
   },
   navGroups: [
+     {
+      label: "Main",
+      items: [
+        {
+          title: "Menus",
+          url: "/menus",
+          icon: BookOpenText,
+        },
+        {
+          title: "Editor",
+          url: "/editor",
+          icon: Code,
+        },
+        {
+          title: "Billing",
+          url: "/billing",
+          icon: CreditCard,
+        },
+      ],
+    },
     {
       label: "Dashboards",
       items: [
