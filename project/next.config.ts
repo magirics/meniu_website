@@ -45,12 +45,11 @@ const nextConfig: NextConfig = {
   },
 
   // Redirects for better SEO
-  async redirects() {
+  async rewrites() {
     return [
       {
-        source: '/home',
-        destination: '/dashboard',
-        permanent: true,
+        source: '/',
+        destination: '/landing',
       },
     ];
   },
