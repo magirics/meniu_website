@@ -52,7 +52,7 @@ export function LoginForm1({
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form action="/">
+            <form action="/dashboard">
               <div className="grid gap-6">
                 <div className="grid gap-4">
                   <FormField
