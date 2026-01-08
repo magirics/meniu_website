@@ -16,7 +16,7 @@ import {
   LayoutTemplate,
   Users,
   BookOpenText,
-  Code,
+  Globe,
 } from "lucide-react"
 import Link from "next/link"
 import { Logo } from "@/components/logo"
@@ -50,9 +50,9 @@ const data = {
           icon: BookOpenText,
         },
         {
-          title: "Editor",
-          url: "/editor",
-          icon: Code,
+          title: "Website",
+          url: "/website",
+          icon: Globe,
         },
         {
           title: "Billing",
