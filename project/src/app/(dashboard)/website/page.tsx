@@ -14,13 +14,11 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { Upload } from "lucide-react"
-import { useRef, useState } from "react"
+import { Download } from "lucide-react"
+import { useEffect, useRef, useState } from "react"
 import { Separator } from "@/components/ui/separator"
-import { Logo } from "@/components/logo"
+import QRCode from "react-qr-code"
 
 const userFormSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -42,6 +40,9 @@ export default function UserSettingsPage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [profileImage, setProfileImage] = useState<string | null>(null)
   const [useDefaultIcon, setUseDefaultIcon] = useState(true)
+
+  const svgRef = useRef(null)
+  const [imgSrc, setImgSrc] = useState("")
   
   const form = useForm<UserFormValues>({
     resolver: zodResolver(userFormSchema),
@@ -89,28 +90,49 @@ export default function UserSettingsPage() {
     }
   }
 
+  useEffect(() => {
+    if (!svgRef.current) return
+
+    const svg = svgRef.current
+    const serializer = new XMLSerializer()
+    const str = serializer.serializeToString(svg)
+
+    const encoded = window.btoa(unescape(encodeURIComponent(str)))
+    setImgSrc(`data:image/svg+xml;base64,${encoded}`)
+  }, [])
+
   return (
     <div className="px-4 lg:px-6">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <Card>
               <CardHeader>
-                <CardTitle>Profile Settings</CardTitle>
-                <CardDescription>Update your personal information and preferences</CardDescription>
+                <CardTitle>Website Settings</CardTitle>
+                <CardDescription>Update your website information and preferences</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
             {/* Profile Picture Section */}
             <div className="flex items-center gap-6 ">
-              {useDefaultIcon ? (
                 <div className="flex h-20 w-20 items-center justify-center rounded-lg">
-                  < Logo size={56} />
+                  <div style={{ height: "auto", margin: "0 auto", maxWidth: 64, width: "100%" }}>
+                    {/* Hidden SVG */}
+                    <QRCode
+                      ref={svgRef}
+                      size={256}
+                      style={{ display: 'none', height: "auto", maxWidth: "100%", width: "100%" }}
+                      value={"http://192.168.1.37:3000"}
+                      viewBox={`0 0 256 256`}
+                    />
+                    {/* Render as IMG */}
+                    {imgSrc && (
+                      <img
+                        src={imgSrc}
+                        alt="QR Code"
+                        className="h-full w-full object-contain"
+                      />
+                    )}
+                  </div>
                 </div>
-              ) : (
-                <Avatar className="h-20 w-20 rounded-lg">
-                  <AvatarImage src={profileImage || undefined} />
-                  <AvatarFallback>SS</AvatarFallback>
-                </Avatar>
-              )}
               <div className="flex flex-col gap-2">
                 <div className="flex gap-2">
                   <Button 
@@ -119,8 +141,8 @@ export default function UserSettingsPage() {
                     onClick={handleFileUpload}
                     className="cursor-pointer"
                   >
-                    <Upload className="mr-2 h-4 w-4" />
-                    Upload new photo
+                    <Download className="mr-2 h-4 w-4" />
+                    Download
                   </Button>
                   <Button 
                     variant="outline" 
@@ -128,11 +150,11 @@ export default function UserSettingsPage() {
                     onClick={handleReset}
                     className="cursor-pointer"
                   >
-                    Reset
+                    SVG
                   </Button>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Allowed JPG, GIF or PNG. Max size of 800K
+                  Use SVG when you want to customize the QR code
                 </p>
               </div>
               <input
@@ -152,10 +174,10 @@ export default function UserSettingsPage() {
                 control={form.control}
                 name="firstName"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>First Name</FormLabel>
+                  <FormItem className="md:col-span-2">
+                    <FormLabel>URL</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter your first name" {...field} />
+                      <Input type="url" placeholder="Enter your website URL" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -168,9 +190,9 @@ export default function UserSettingsPage() {
                 name="lastName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Last Name</FormLabel>
+                    <FormLabel>Title</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter your last name" {...field} />
+                      <Input placeholder="Enter your website's title" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -183,165 +205,35 @@ export default function UserSettingsPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>E-mail</FormLabel>
+                    <FormLabel>Keywords</FormLabel>
                     <FormControl>
-                      <Input type="email" placeholder="Enter your email" {...field} />
+                      <Input type="email" placeholder="Enter your website's keywords" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              {/* Company */}
+              {/* Bio - Full Width */}
               <FormField
                 control={form.control}
-                name="company"
+                name="bio"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Company</FormLabel>
+                  <FormItem className="md:col-span-2">
+                    <FormLabel>Description</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter your company" {...field} />
+                      <Textarea 
+                        placeholder="Enter your website's description..." 
+                        className="min-h-[100px]"
+                        {...field}
+                      />
                     </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Phone Number */}
-              <FormField
-                control={form.control}
-                name="phone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Phone Number</FormLabel>
-                    <FormControl>
-                      <Input type="tel" placeholder="Enter your phone number" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Location */}
-              <FormField
-                control={form.control}
-                name="location"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Location</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter your location" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Website */}
-              <FormField
-                control={form.control}
-                name="website"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Website</FormLabel>
-                    <FormControl>
-                      <Input type="url" placeholder="Enter your website" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Language */}
-              <FormField
-                control={form.control}
-                name="language"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Language</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select Language" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="english">English</SelectItem>
-                        <SelectItem value="spanish">Spanish</SelectItem>
-                        <SelectItem value="french">French</SelectItem>
-                        <SelectItem value="german">German</SelectItem>
-                        <SelectItem value="italian">Italian</SelectItem>
-                        <SelectItem value="portuguese">Portuguese</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Role */}
-              <FormField
-                control={form.control}
-                name="role"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Role</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter your role" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Timezone */}
-              <FormField
-                control={form.control}
-                name="timezone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Timezone</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select Timezone" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="pst">PST (Pacific Standard Time)</SelectItem>
-                        <SelectItem value="est">EST (Eastern Standard Time)</SelectItem>
-                        <SelectItem value="cst">CST (Central Standard Time)</SelectItem>
-                        <SelectItem value="mst">MST (Mountain Standard Time)</SelectItem>
-                        <SelectItem value="utc">UTC (Coordinated Universal Time)</SelectItem>
-                        <SelectItem value="cet">CET (Central European Time)</SelectItem>
-                        <SelectItem value="jst">JST (Japan Standard Time)</SelectItem>
-                        <SelectItem value="aest">AEST (Australian Eastern Standard Time)</SelectItem>
-                      </SelectContent>
-                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
               />
             </div>
 
-            {/* Bio - Full Width */}
-            <FormField
-              control={form.control}
-              name="bio"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Bio</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="Tell us a little about yourself..." 
-                      className="min-h-[100px]"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
 
             {/* Action Buttons */}
             <div className="flex justify-start gap-3">
