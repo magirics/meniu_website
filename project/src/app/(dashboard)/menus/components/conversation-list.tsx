@@ -26,9 +26,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
-import { useChat, type Conversation } from "../use-chat"
+import { useChat, type Conversation, type Menu } from "../use-chat"
 
 interface ConversationListProps {
+  menus: Menu[]
   conversations: Conversation[]
   selectedConversation: string | null
   onSelectConversation: (conversationId: string) => void
@@ -52,23 +53,32 @@ function formatMessageTime(timestamp: string): string {
 }
 
 export function ConversationList({
+  menus,
   conversations,
   selectedConversation,
   onSelectConversation
 }: ConversationListProps) {
   const { searchQuery, setSearchQuery } = useChat()
 
-  const filteredConversations = conversations.filter((conversation) =>
-    conversation.name.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  const filteredMenus = menus.filter((menu) => {
+    if (searchQuery === "" || searchQuery.trim() === "") return true
+    const queries = searchQuery.toLowerCase().split(",").map(query => query.trim()).filter(query => query !== "")
+    return queries.some(query => menu.name.toLowerCase().includes(query) || menu.description.toLowerCase().includes(query))
+  })
 
-  const sortedConversations = filteredConversations.sort((a, b) => {
-    // Pinned conversations first
-    if (a.isPinned && !b.isPinned) return -1
-    if (!a.isPinned && b.isPinned) return 1
+  const sortedMenus = filteredMenus.sort((a, b) => {
+    // Default menu first
+    if (a.default) return -1
+    if (b.default) return 1
 
-    // Then by last message timestamp
-    return new Date(b.lastMessage.timestamp).getTime() - new Date(a.lastMessage.timestamp).getTime()
+    // Scheduled menus last
+    if (!a.schedule && b.schedule) return 1
+    if (a.schedule && !b.schedule) return -1
+    if (!a.schedule && !b.schedule)
+      return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+
+    // Then by schedule start
+    return new Date(b.schedule.start).getTime() - new Date(a.schedule.start).getTime()
   })
 
   const getOnlineStatus = (conversation: Conversation) => {
@@ -129,7 +139,7 @@ export function ConversationList({
       {/* Conversations */}
       <ScrollArea className="flex-1">
         <div className="p-2">
-          {sortedConversations.map((conversation) => (
+          {sortedMenus.map((conversation) => (
             <div
               key={conversation.id}
               className={cn(
@@ -147,17 +157,13 @@ export function ConversationList({
                   selectedConversation === conversation.id && "ring-2 ring-background"
                 )}>
                   <AvatarImage src={conversation.avatar} alt={conversation.name} />
-                  <AvatarFallback className="text-sm">
-                    {conversation.type === "group" ? (
-                      <Users className="h-5 w-5" />
-                    ) : (
-                      conversation.name.split(' ').map(n => n[0]).join('').slice(0, 2)
-                    )}
+                  <AvatarFallback className="text-4xl">
+                    {conversation.avatar}
                   </AvatarFallback>
                 </Avatar>
 
                 {/* Online indicator for direct messages */}
-                {conversation.type === "direct" && getOnlineStatus(conversation) && (
+                {conversation.active && (
                   <div className="absolute -bottom-1 -right-1 h-4 w-4 bg-green-500 border-2 border-background rounded-full" />
                 )}
 
@@ -174,7 +180,7 @@ export function ConversationList({
                 <div className="flex items-center justify-between mb-1 min-w-0">
                   <div className="flex items-center gap-1 min-w-0 flex-1 overflow-hidden pr-2">
                     <h3 className="font-medium truncate min-w-0 max-w-[160px] lg:max-w-[180px]">{conversation.name}</h3>
-                    {conversation.isPinned && (
+                    {conversation.default && (
                       <Pin className="h-3 w-3 text-muted-foreground flex-shrink-0" />
                     )}
                     {conversation.isMuted && (
@@ -182,7 +188,7 @@ export function ConversationList({
                     )}
                   </div>
                   <span className="text-xs text-muted-foreground flex-shrink-0 whitespace-nowrap">
-                    {formatMessageTime(conversation.lastMessage.timestamp)}
+                    {conversation.schedule && formatMessageTime(conversation.schedule.start)}
                   </span>
                 </div>
 
@@ -190,13 +196,6 @@ export function ConversationList({
                   <p className="text-sm text-muted-foreground truncate flex-1 min-w-0 max-w-[180px] lg:max-w-[200px] pr-2">
                     {conversation.lastMessage.content}
                   </p>
-
-                  {/* Unread count */}
-                  {conversation.unreadCount > 0 && (
-                    <Badge variant="default" className="min-w-[20px] h-5 text-xs cursor-pointer flex-shrink-0">
-                      {conversation.unreadCount > 99 ? "99+" : conversation.unreadCount}
-                    </Badge>
-                  )}
                 </div>
               </div>
             </div>

@@ -2,6 +2,19 @@
 
 import { create } from "zustand"
 
+export interface Menu {
+  id: string
+  name: string
+  description: string
+  avatar: string
+  schedule: {
+    start: string
+    end: string
+  }
+  active: boolean
+  default: boolean
+}
+
 export interface User {
   id: string
   name: string

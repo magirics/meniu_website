@@ -9,18 +9,20 @@ import { ConversationList } from "./conversation-list"
 import { ChatHeader } from "./chat-header"
 import { MessageList } from "./message-list"
 import { MessageInput } from "./message-input"
-import { useChat, type Conversation, type Message, type User } from "../use-chat"
+import { useChat, type Conversation, type Message, type User, type Menu } from "../use-chat"
 
 interface ChatProps {
   conversations: Conversation[]
   messages: Record<string, Message[]>
   users: User[]
+  menus: Menu[]
 }
 
 export function Chat({
   conversations,
   messages,
   users,
+  menus,
 }: ChatProps) {
   const {
     selectedConversation,
@@ -128,6 +130,7 @@ export function Chat({
           </div>
 
           <ConversationList
+            menus={menus}
             conversations={conversations}
             selectedConversation={selectedConversation}
             onSelectConversation={(id) => {
@@ -164,16 +167,7 @@ export function Chat({
           <div className="flex-1 flex flex-col min-h-0">
             {selectedConversation ? (
               <>
-                <MessageList
-                  messages={currentMessages}
-                  users={users}
-                />
-
-                {/* Message Input */}
-                <MessageInput
-                  onSendMessage={handleSendMessage}
-                  placeholder={`Message ${currentConversation?.name || ""}...`}
-                />
+                {/* FIX */}
               </>
             ) : (
               <div className="flex-1 flex items-center justify-center">

@@ -3,17 +3,19 @@
 import { useEffect, useState } from "react"
 
 import { Chat } from "./components/chat"
-import { type Conversation, type Message, type User } from "./use-chat"
+import { type Conversation, type Message, type User, type Menu } from "./use-chat"
 
 // Import static data
 import conversationsData from "./data/conversations.json"
 import messagesData from "./data/messages.json"
 import usersData from "./data/users.json"
+import menusData from "./data/menus.json"
 
 export default function ChatPage() {
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [messages, setMessages] = useState<Record<string, Message[]>>({})
   const [users, setUsers] = useState<User[]>([])
+  const [menus, setMenus] = useState<Menu[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -23,6 +25,7 @@ export default function ChatPage() {
         setConversations(conversationsData as Conversation[])
         setMessages(messagesData as Record<string, Message[]>)
         setUsers(usersData as User[])
+        setMenus(menusData as Menu[])
       } catch (error) {
         console.error("Failed to load chat data:", error)
       } finally {
@@ -47,6 +50,7 @@ export default function ChatPage() {
         conversations={conversations}
         messages={messages}
         users={users}
+        menus={menus}
       />
     </div>
   )
