@@ -81,45 +81,11 @@ export function ConversationList({
     return new Date(b.schedule.start).getTime() - new Date(a.schedule.start).getTime()
   })
 
-  const getOnlineStatus = (conversation: Conversation) => {
-    if (conversation.type === "direct" && conversation.participants.length === 1) {
-      // In a real app, you'd check user online status
-      return Math.random() > 0.5 // Mock online status
-    }
-    return false
-  }
-
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Header - Hidden on mobile (handled by parent) */}
       <div className="hidden lg:flex items-center justify-between h-16 px-4 border-b flex-shrink-0">
-        <h2 className="text-lg font-semibold">Messages</h2>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 w-8 p-0 cursor-pointer"
-            >
-              <MoreVertical className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem className="cursor-pointer">
-              <UserPlus className="h-4 w-4 mr-2" />
-              New Chat
-            </DropdownMenuItem>
-            <DropdownMenuItem className="cursor-pointer">
-              <Filter className="h-4 w-4 mr-2" />
-              Filter Messages
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="cursor-pointer">
-              <Settings className="h-4 w-4 mr-2" />
-              Chat Settings
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <h2 className="text-lg font-semibold">Menus</h2>
       </div>
 
       {/* Search */}
@@ -128,7 +94,7 @@ export function ConversationList({
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             type="text"
-            placeholder="Search conversations..."
+            placeholder="Search menus..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9 cursor-text"

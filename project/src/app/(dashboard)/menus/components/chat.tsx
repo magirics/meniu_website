@@ -5,11 +5,13 @@ import { Menu, X } from "lucide-react"
 
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { Button } from "@/components/ui/button"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ConversationList } from "./conversation-list"
 import { ChatHeader } from "./chat-header"
 import { MessageList } from "./message-list"
 import { MessageInput } from "./message-input"
 import { useChat, type Conversation, type Message, type User, type Menu } from "../use-chat"
+import MenuForm from "./menu-form"
 
 interface ChatProps {
   conversations: Conversation[]
@@ -99,7 +101,7 @@ export function Chat({
 
   return (
     <TooltipProvider delayDuration={0}>
-      <div className="h-full min-h-[600px] max-h-[calc(100vh-200px)] flex rounded-lg border overflow-hidden bg-background">
+      <div className="h-full min-h-[600px] max-h-[calc(100vh-200px)] flex rounded-lg border bg-background">
         {/* Mobile Sidebar Overlay */}
         {isSidebarOpen && (
           <div
@@ -140,47 +142,57 @@ export function Chat({
           />
         </div>
 
-        {/* Chat Panel - Flexible Width */}
-        <div className="flex-1 flex flex-col min-w-0 bg-background">
-          {/* Chat Header with Hamburger Menu */}
-          <div className="flex items-center h-16 px-4 border-b bg-background">
-            {/* Hamburger Menu Button - Only visible when sidebar is hidden on mobile */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsSidebarOpen(true)}
-              className="cursor-pointer lg:hidden mr-2"
-            >
-              <Menu className="h-4 w-4" />
-            </Button>
+        <Tabs defaultValue="settings" className="grow">
+          {/* Chat Panel - Flexible Width */}
+          <div className="flex-1 flex flex-col min-w-0 bg-background">
+            {/* Chat Header with Hamburger Menu */}
+            <div className="flex items-center h-16 px-4 border-b bg-background">
+              {/* Hamburger Menu Button - Only visible when sidebar is hidden on mobile */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsSidebarOpen(true)}
+                className="cursor-pointer lg:hidden mr-2"
+              >
+                <Menu className="h-4 w-4" />
+              </Button>
 
-            <div className="flex-1">
-              <ChatHeader
-                conversation={currentConversation || null}
-                users={users}
-                onToggleMute={handleToggleMute}
-              />
-            </div>
-          </div>
-
-          {/* Messages */}
-          <div className="flex-1 flex flex-col min-h-0">
-            {selectedConversation ? (
-              <>
-                {/* FIX */}
-              </>
-            ) : (
-              <div className="flex-1 flex items-center justify-center">
-                <div className="text-center">
-                  <h3 className="text-lg font-semibold mb-2">Welcome to Chat</h3>
-                  <p className="text-muted-foreground">
-                    Select a conversation to start messaging
-                  </p>
+              <div className="flex-1">
+                <div className="flex items-center px-4 py-1.5">
+                  <TabsList>
+                    <TabsTrigger value="settings" className="cursor-pointer">Settings</TabsTrigger>
+                    <TabsTrigger value="editor" className="cursor-pointer">Editor</TabsTrigger>
+                  </TabsList>
                 </div>
               </div>
-            )}
+            </div>
+
+            {/* Messages */}
+            <div className="flex-1 flex flex-col min-h-0">
+              {selectedConversation ? (
+                <>
+                  <TabsContent value="settings" className="m-0">
+                    {/* <MailList items={mails} /> */}
+                    <MenuForm />
+                  </TabsContent>
+                  <TabsContent value="editor" className="m-0">
+                    {/* <MailList items={mails.filter((item) => !item.read)} /> */}
+                    Editor
+                  </TabsContent>
+                </>
+              ) : (
+                <div className="flex-1 flex items-center justify-center">
+                  <div className="text-center">
+                    <h3 className="text-lg font-semibold mb-2">Welcome to Chat</h3>
+                    <p className="text-muted-foreground">
+                      Select a conversation to start messaging
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        </Tabs>
       </div>
     </TooltipProvider>
   )

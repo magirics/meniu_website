@@ -45,7 +45,7 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="px-4 md:px-6">
+    <div className="px-4 md:px-6 overflow-scroll">
       <Chat
         conversations={conversations}
         messages={messages}
