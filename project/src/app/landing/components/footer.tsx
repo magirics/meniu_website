@@ -74,37 +74,6 @@ export function LandingFooter() {
   return (
     <footer className="border-t bg-background">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        {/* Newsletter Section */}
-        <div className="mb-16">
-          <div className="mx-auto max-w-2xl text-center">
-            <h3 className="text-2xl font-bold mb-4">Stay updated</h3>
-            <p className="text-muted-foreground mb-6">
-              Get the latest updates, articles, and resources sent to your inbox weekly.
-            </p>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-2 max-w-md mx-auto sm:flex-row">
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem className="flex-1">
-                      <FormControl>
-                        <Input
-                          type="email"
-                          placeholder="Enter your email"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button type="submit" className="cursor-pointer">Subscribe</Button>
-              </form>
-            </Form>
-          </div>
-        </div>
-
         {/* Main Footer Content */}
         <div className="grid gap-8 grid-cols-4 lg:grid-cols-6">
           {/* Brand Column */}
@@ -112,7 +81,7 @@ export function LandingFooter() {
             <div className="flex items-center space-x-2 mb-4 max-lg:justify-center">
               <a href="https://shadcnstore.com" target='_blank' className="flex items-center space-x-2 cursor-pointer">
                 <Logo size={32} />
-                <span className="font-bold text-xl">ShadcnStore</span>
+                <span className="font-bold text-xl">Meniu</span>
               </a>
             </div>
             <p className="text-muted-foreground mb-6 max-lg:text-center max-lg:flex max-lg:justify-center">
@@ -203,19 +172,7 @@ export function LandingFooter() {
         <Separator className="my-8" />
 
         {/* Bottom Footer */}
-        <div className="flex flex-col lg:flex-row justify-between items-center gap-2">
-          <div className="flex flex-col sm:flex-row items-center gap-2 text-muted-foreground text-sm">
-            <div className="flex items-center gap-1">
-              <span>Made with</span>
-              <Heart className="h-4 w-4 text-red-500 fill-current" />
-              <span>by</span>
-              <a href="https://shadcnstore.com" target='_blank' className="font-semibold text-foreground hover:text-primary transition-colors cursor-pointer">
-                ShadcnStore
-              </a>
-            </div>
-            <span className="hidden sm:inline">•</span>
-            <span>© {new Date().getFullYear()} for the developer community</span>
-          </div>
+        <div className="flex flex-col lg:flex-row-reverse justify-between items-center gap-2">
           <div className="flex items-center space-x-4 text-sm text-muted-foreground mt-4 md:mt-0">
             <a href="#privacy" className="hover:text-foreground transition-colors">
               Privacy Policy

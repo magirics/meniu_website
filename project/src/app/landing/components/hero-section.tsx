@@ -18,15 +18,6 @@ export function HeroSection() {
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
         <div className="mx-auto max-w-4xl text-center">
-          {/* Announcement Badge */}
-          <div className="mb-8 flex justify-center">
-            <Badge variant="outline" className="px-4 py-2 border-foreground">
-              <Star className="w-3 h-3 mr-2 fill-current" />
-              New: Premium Template Collection
-              <ArrowRight className="w-3 h-3 ml-2" />
-            </Badge>
-          </div>
-
           {/* Main Headline */}
           <h1 className="mb-6 text-4xl font-bold tracking-tight sm:text-6xl lg:text-7xl">
             Build Better
