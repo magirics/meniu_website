@@ -29,26 +29,22 @@ export function HeroSection() {
 
           {/* Subheading */}
           <p className="mx-auto mb-10 max-w-2xl text-lg text-muted-foreground sm:text-xl">
-            Update prices instantly, save time, and present your food beautifully
+            Update prices instantly, save time, and present your food
+            beautifully
           </p>
 
           {/* CTA Buttons */}
           <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
-            <Button size="lg" className="text-base cursor-pointer" asChild>
+            {/* <Button size="lg" className="text-base cursor-pointer" asChild>
               <Link href="/sign-up">
-                Get Started Free
+                Get Started
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
-            </Button>
-            <Button
-              variant="outline"
-              size="lg"
-              className="text-base cursor-pointer"
-              asChild
-            >
+            </Button> */}
+            <Button size="lg" className="text-base cursor-pointer" asChild>
               <a href="#">
                 <Play className="mr-2 h-4 w-4" />
-                Play Demo
+                Try Demo
               </a>
             </Button>
           </div>

@@ -26,35 +26,18 @@ const footerLinks = {
   product: [
     { name: 'Features', href: '#features' },
     { name: 'Pricing', href: '#pricing' },
-    { name: 'API', href: '#api' },
-    { name: 'Documentation', href: '#docs' },
   ],
   company: [
     { name: 'About', href: '#about' },
     { name: 'Blog', href: '#blog' },
     { name: 'Careers', href: '#careers' },
-    { name: 'Press', href: '#press' },
-  ],
-  resources: [
-    { name: 'Help Center', href: '#help' },
-    { name: 'Community', href: '#community' },
-    { name: 'Guides', href: '#guides' },
-    { name: 'Webinars', href: '#webinars' },
   ],
   legal: [
     { name: 'Privacy', href: '#privacy' },
     { name: 'Terms', href: '#terms' },
-    { name: 'Security', href: '#security' },
     { name: 'Status', href: '#status' },
   ],
 }
-
-const socialLinks = [
-  { name: 'Twitter', href: '#', icon: Twitter },
-  { name: 'GitHub', href: 'https://github.com/silicondeck/shadcn-dashboard-landing-template', icon: Github },
-  { name: 'LinkedIn', href: '#', icon: Linkedin },
-  { name: 'YouTube', href: '#', icon: Youtube },
-]
 
 export function LandingFooter() {
   const form = useForm<z.infer<typeof newsletterSchema>>({
@@ -75,7 +58,7 @@ export function LandingFooter() {
     <footer className="border-t bg-background">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
         {/* Main Footer Content */}
-        <div className="grid gap-8 grid-cols-4 lg:grid-cols-6">
+        <div className="grid gap-8 grid-cols-4 lg:grid-cols-5">
           {/* Brand Column */}
           <div className="col-span-4 lg:col-span-2 max-w-2xl">
             <div className="flex items-center space-x-2 mb-4 max-lg:justify-center">
@@ -84,9 +67,6 @@ export function LandingFooter() {
                 <span className="font-bold text-xl">Meniu</span>
               </a>
             </div>
-            <p className="text-muted-foreground mb-6 max-lg:text-center max-lg:flex max-lg:justify-center">
-              Accelerating web development with curated blocks, templates, landing pages, and admin dashboards designed for modern developers.
-            </p>
           </div>
 
           {/* Links Columns */}
@@ -110,22 +90,6 @@ export function LandingFooter() {
             <h4 className="font-semibold mb-4">Company</h4>
             <ul className="space-y-3">
               {footerLinks.company.map((link) => (
-                <li key={link.name}>
-                  <a
-                    href={link.href}
-                    className="text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    {link.name}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className='max-md:col-span-2 lg:col-span-1'>
-            <h4 className="font-semibold mb-4">Resources</h4>
-            <ul className="space-y-3">
-              {footerLinks.resources.map((link) => (
                 <li key={link.name}>
                   <a
                     href={link.href}

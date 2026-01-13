@@ -107,9 +107,9 @@ export function LandingNavbar() {
           <Button variant="ghost" asChild className="cursor-pointer">
             <Link href="/sign-in">Sign In</Link>
           </Button>
-          <Button asChild className="cursor-pointer">
+          {/* <Button asChild className="cursor-pointer">
             <Link href="/auth/sign-up">Get Started</Link>
-          </Button>
+          </Button> */}
         </div>
 
         {/* Mobile Menu */}
