@@ -69,7 +69,6 @@ export function PricingSection() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="mx-auto max-w-2xl text-center mb-12">
-          <Badge variant="outline" className="mb-4">Pricing Plans</Badge>
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">
             Choose your plan
           </h2>
@@ -174,18 +173,6 @@ export function PricingSection() {
               ))}
             </div>
           </div>
-        </div>
-
-        {/* Enterprise Note */}
-        <div className="mt-16 text-center">
-          <p className="text-muted-foreground">
-            Need custom components or have questions? {' '}
-            <Button variant="link" className="p-0 h-auto cursor-pointer" asChild>
-              <a href="#contact">
-                Contact our team
-              </a>
-            </Button>
-          </p>
         </div>
       </div>
     </section>

@@ -60,7 +60,6 @@ const smoothScrollTo = (targetId: string) => {
 
 export function LandingNavbar() {
   const [isOpen, setIsOpen] = useState(false)
-  const [solutionsOpen, setSolutionsOpen] = useState(false)
   const { setTheme, theme } = useTheme()
 
   return (
@@ -80,7 +79,7 @@ export function LandingNavbar() {
         </div>
 
         {/* Desktop Navigation */}
-        <NavigationMenu className="hidden xl:flex">
+        <NavigationMenu className="hidden lg:flex">
           <NavigationMenuList>
             {navigationItems.map((item) => (
               <NavigationMenuItem key={item.name}>
@@ -103,7 +102,7 @@ export function LandingNavbar() {
         </NavigationMenu>
 
         {/* Desktop CTA */}
-        <div className="hidden xl:flex items-center space-x-2">
+        <div className="hidden lg:flex items-center space-x-2">
           <ModeToggle variant="ghost" />
           <Button variant="ghost" asChild className="cursor-pointer">
             <Link href="/sign-in">Sign In</Link>
@@ -115,7 +114,7 @@ export function LandingNavbar() {
 
         {/* Mobile Menu */}
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
-          <SheetTrigger asChild className="xl:hidden">
+          <SheetTrigger asChild className="lg:hidden">
             <Button variant="ghost" size="icon" className="cursor-pointer">
               <Menu className="h-5 w-5" />
               <span className="sr-only">Toggle menu</span>

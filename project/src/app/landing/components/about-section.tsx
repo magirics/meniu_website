@@ -35,9 +35,6 @@ export function AboutSection() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="mx-auto max-w-4xl text-center mb-16">
-          <Badge variant="outline" className="mb-4">
-            About ShadcnStore
-          </Badge>
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-6">
             Built for developers, by developers
           </h2>

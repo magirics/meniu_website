@@ -87,20 +87,6 @@ export function LandingFooter() {
             <p className="text-muted-foreground mb-6 max-lg:text-center max-lg:flex max-lg:justify-center">
               Accelerating web development with curated blocks, templates, landing pages, and admin dashboards designed for modern developers.
             </p>
-            <div className="flex space-x-4 max-lg:justify-center">
-              {socialLinks.map((social) => (
-                <Button key={social.name} variant="ghost" size="icon" asChild>
-                  <a
-                    href={social.href}
-                    aria-label={social.name}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <social.icon className="h-4 w-4" />
-                  </a>
-                </Button>
-              ))}
-            </div>
           </div>
 
           {/* Links Columns */}

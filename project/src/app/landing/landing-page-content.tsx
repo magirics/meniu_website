@@ -28,16 +28,9 @@ export function LandingPageContent() {
       {/* Main Content */}
       <main>
         <HeroSection />
-        {/* <LogoCarousel /> */}
-        {/* <StatsSection /> */}
-        <AboutSection />
         <FeaturesSection />
-        {/* <TeamSection /> */}
         <PricingSection />
-        {/* <TestimonialsSection /> */}
-        {/* <BlogSection /> */}
         <FaqSection />
-        <CTASection />
         <ContactSection />
       </main>
 
