@@ -72,7 +72,6 @@ export default function DashboardLayout({
         open={themeCustomizerOpen}
         onOpenChange={setThemeCustomizerOpen}
       />
-      <UpgradeToProButton />
     </SidebarProvider>
   );
 }
