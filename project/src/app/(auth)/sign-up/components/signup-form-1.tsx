@@ -1,5 +1,6 @@
 "use client"
 
+import "@/lib/auth"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -22,18 +23,23 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Checkbox } from "@/components/ui/checkbox"
+import { confirmSignIn, signIn } from "aws-amplify/auth"
+import { useState } from "react"
+import { useRouter } from "next/navigation"
 
 const signupFormSchema = z.object({
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
+  fullName: z.string().min(1, "Full name is required"),
   email: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
-  confirmPassword: z.string().min(6, "Please confirm your password"),
-  terms: z.boolean().refine(val => val === true, "You must agree to the terms"),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
+  temporaryPassword: z.string().min(6, "Please confirm your password"),
+  terms: z
+    .boolean()
+    .refine((val) => val === true, "You must agree to the terms"),
 })
+// .refine((data) => data.password === data.confirmPassword, {
+//   message: "Passwords don't match",
+//   path: ["confirmPassword"],
+// })
 
 type SignupFormValues = z.infer<typeof signupFormSchema>
 
@@ -44,18 +50,42 @@ export function SignupForm1({
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupFormSchema),
     defaultValues: {
-      firstName: "",
-      lastName: "",
+      fullName: "",
       email: "",
       password: "",
-      confirmPassword: "",
+      temporaryPassword: "",
       terms: false,
     },
   })
 
-  function onSubmit(data: SignupFormValues) {
-    console.log("Signup attempt:", data)
-    // Here you would typically handle the signup
+  const router = useRouter()
+  const [submitting, setSubmitting] = useState(false)
+
+  const onSubmit = async (data: SignupFormValues) => {
+    setSubmitting(false)
+
+    try {
+      const result = await signIn({
+        username: data.email,
+        password: data.temporaryPassword,
+      })
+
+      if (
+        result.nextStep.signInStep ===
+        "CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED"
+      ) {
+        await confirmSignIn({
+          challengeResponse: data.password,
+          options: { userAttributes: { name: data.fullName } },
+        })
+      }
+
+      router.push("/dashboard")
+    } catch (err: any) {
+      console.error(err)
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -72,34 +102,19 @@ export function SignupForm1({
             <form onSubmit={form.handleSubmit(onSubmit)}>
               <div className="grid gap-6">
                 <div className="grid gap-4">
-                  <div className="grid grid-cols-2 gap-3">
-                    <FormField
-                      control={form.control}
-                      name="firstName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>First Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="John" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="lastName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Last Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Doe" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                  <FormField
+                    control={form.control}
+                    name="fullName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Full Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="John Doe" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                   <FormField
                     control={form.control}
                     name="email"
@@ -109,7 +124,7 @@ export function SignupForm1({
                         <FormControl>
                           <Input
                             type="email"
-                            placeholder="m@example.com"
+                            placeholder="john@email.com"
                             {...field}
                           />
                         </FormControl>
@@ -132,10 +147,10 @@ export function SignupForm1({
                   />
                   <FormField
                     control={form.control}
-                    name="confirmPassword"
+                    name="temporaryPassword"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Confirm Password</FormLabel>
+                        <FormLabel>Temporary Password</FormLabel>
                         <FormControl>
                           <Input type="password" {...field} />
                         </FormControl>
@@ -161,11 +176,19 @@ export function SignupForm1({
                       </FormItem>
                     )}
                   />
-                  <Button type="submit" className="w-full cursor-pointer">
+                  <Button
+                    type="submit"
+                    className="w-full cursor-pointer"
+                    disabled={submitting}
+                  >
                     Create Account
                   </Button>
 
-                  <Button variant="outline" className="w-full cursor-pointer" type="button">
+                  <Button
+                    variant="outline"
+                    className="w-full cursor-pointer"
+                    type="button"
+                  >
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                       <path
                         d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"
@@ -177,7 +200,10 @@ export function SignupForm1({
                 </div>
                 <div className="text-center text-sm">
                   Already have an account?{" "}
-                  <a href="/auth/sign-in" className="underline underline-offset-4">
+                  <a
+                    href="/auth/sign-in"
+                    className="underline underline-offset-4"
+                  >
                     Sign in
                   </a>
                 </div>

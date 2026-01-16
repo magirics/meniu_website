@@ -25,6 +25,9 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { Button } from "./ui/button"
+import { signOut } from "aws-amplify/auth"
+import { useRouter } from "next/navigation"
 
 export function NavUser({
   user,
@@ -36,6 +39,12 @@ export function NavUser({
   }
 }) {
   const { isMobile } = useSidebar()
+  const router = useRouter()
+
+  const onLogout = async () => {
+    await signOut()
+    router.push('/sign-in')
+  }
 
   return (
     <SidebarMenu>
@@ -47,7 +56,7 @@ export function NavUser({
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground cursor-pointer"
             >
               <div className="flex h-8 w-8 items-center justify-center rounded-lg">
-                < Logo size={28} />
+                <Logo size={28} />
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{user.name}</span>
@@ -67,7 +76,7 @@ export function NavUser({
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <div className="h-8 w-8 rounded-lg">
-                  < Logo size={28} />
+                  <Logo size={28} />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{user.name}</span>
@@ -100,10 +109,10 @@ export function NavUser({
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild className="cursor-pointer">
-              <Link href="/sign-in">
+              <Button variant="ghost" onClick={onLogout}>
                 <LogOut />
                 Log out
-              </Link>
+              </Button>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
