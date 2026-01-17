@@ -35,24 +35,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(true)
 
     try {
-      const user = await getCurrentUser()
-      const session = await fetchAuthSession()
+      // const user = await getCurrentUser()
+      // const session = await fetchAuthSession()
+      // console.log("Here in AuthContext", new Date().getMinutes())
 
-      const accessToken = session.tokens?.accessToken?.toString()
-      const response = await fetch("/api/token", {
-        method: "POST",
-        body: JSON.stringify({ token: accessToken }),
-      })
-      console.log("response", response)
+      // const accessToken = session.tokens?.accessToken?.toString()
+      // const response = await fetch("/api/token", {
+      //   method: "POST",
+      //   body: JSON.stringify({ token: accessToken }),
+      // })
+      // console.log("response", response)
 
-      const groups =
-        (session.tokens?.idToken?.payload["cognito:groups"] as string[]) ?? []
+      // const groups =
+      //   (session.tokens?.idToken?.payload["cognito:groups"] as string[]) ?? []
 
-      setUser({
-        id: user.userId || "Diego",
-        email: user.signInDetails?.loginId || "diego.undefined@gmail.com",
-        groups,
-      })
+      // setUser({
+      //   id: user.userId || "Diego",
+      //   email: user.signInDetails?.loginId || "diego.undefined@gmail.com",
+      //   groups,
+      // })
     } catch (e) {
       console.error(e)
       // router.push("/sign-in")
@@ -65,7 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loadUser()
   }, [])
 
-  if (loading || !user) return null
+  // if (loading || !user) return null
 
   return (
     <context.Provider
