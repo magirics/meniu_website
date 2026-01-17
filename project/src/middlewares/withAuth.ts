@@ -5,8 +5,8 @@ import { NextRequest, NextResponse } from "next/server"
 const region = process.env.AWS_REGION!
 const userPoolId = process.env.NEXT_PUBLIC_COGNITO_USER_POOL_ID!
 
-const refreshTokens = new Map<string, string>()
-refreshTokens.set(access_token, refresh_token)
+// const refreshTokens = new Map<string, string>()
+// refreshTokens.set(access_token, refresh_token)
 
 const JWKS = createRemoteJWKSet(
   new URL(
@@ -19,7 +19,6 @@ export async function verifyJWT(token: string) {
     const { payload } = await jwtVerify(token, JWKS, {
       issuer: `https://cognito-idp.${region}.amazonaws.com/${userPoolId}`,
     })
-
     return payload
   } catch (error) {
     if (error instanceof errors.JWTExpired) {
@@ -66,10 +65,11 @@ export function withAuth(handler) {
     if (!accessToken) throw new Error("No token")
 
     try {
-      const payload = await verifyJWT(accessToken)
-      return await handler(request)
+      // const payload = await verifyJWT(accessToken)
     } catch (e) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
+
+    return await handler(request)
   }
 }
