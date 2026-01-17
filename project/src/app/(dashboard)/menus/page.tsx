@@ -3,7 +3,12 @@
 import { useEffect, useState } from "react"
 
 import { Chat } from "./components/chat"
-import { type Conversation, type Message, type User, type Menu } from "./use-chat"
+import {
+  type Conversation,
+  type Message,
+  type User,
+  type Menu,
+} from "./use-chat"
 
 // Import static data
 import conversationsData from "./data/conversations.json"
@@ -26,6 +31,10 @@ export default function ChatPage() {
         setMessages(messagesData as Record<string, Message[]>)
         setUsers(usersData as User[])
         setMenus(menusData as Menu[])
+
+        const response = await fetch("/api/menus")
+        const menus = await response.json()
+        console.log("menus", menus)
       } catch (error) {
         console.error("Failed to load chat data:", error)
       } finally {
