@@ -15,14 +15,11 @@ type AuthUser = {
   id: string
   email: string
   name: string
-  groups: string[]
+  role: string
 }
 
 type AuthContextValue = {
   user: AuthUser | null
-  loading: boolean
-  authenticated: boolean
-  refresh: () => Promise<void>
 }
 
 const context = createContext<AuthContextValue | null>(null)
@@ -54,7 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         id: user.userId,
         email: user.signInDetails!.loginId!,
         name: user.username,
-        groups,
+        role: groups[0],
       })
     } catch (e) {
       console.error(e)
@@ -74,9 +71,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <context.Provider
       value={{
         user,
-        loading,
-        authenticated: !!user,
-        refresh: loadUser,
       }}
     >
       {children}
