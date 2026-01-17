@@ -23,7 +23,12 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Checkbox } from "@/components/ui/checkbox"
-import { confirmSignIn, signIn } from "aws-amplify/auth"
+import {
+  confirmSignIn,
+  signIn,
+  getCurrentUser,
+  fetchAuthSession,
+} from "aws-amplify/auth"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 
@@ -74,10 +79,12 @@ export function SignupForm1({
         result.nextStep.signInStep ===
         "CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED"
       ) {
-        await confirmSignIn({
+        const response = await confirmSignIn({
           challengeResponse: data.password,
           options: { userAttributes: { name: data.fullName } },
         })
+
+        const respose = await fetch("/sign-up", { method: "POST" })
       }
 
       router.push("/dashboard")

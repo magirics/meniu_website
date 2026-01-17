@@ -26,19 +26,20 @@ export async function verifyJWT(token: string) {
   }
 }
 
-export function withAuth(handler) {
-  return async function (request: NextRequest) {
+export function withAuth(next) {
+  return async function (request: NextRequest, context) {
     const cookieStore = await cookies()
     const token = cookieStore.get("token")?.value
     if (!token)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
+    let auth = null
     try {
-      const payload = await verifyJWT(token)
+      auth = await verifyJWT(token)
     } catch (e) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    return await handler(request)
+    return await next(request, { ...context, auth })
   }
 }
