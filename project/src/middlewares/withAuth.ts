@@ -1,20 +1,16 @@
+import env from "@/lib/env"
 import { jwtVerify, createRemoteJWKSet, errors } from "jose"
 import { cookies } from "next/headers"
 import { NextRequest, NextResponse } from "next/server"
 
-const region = process.env.AWS_REGION!
-const userPoolId = process.env.NEXT_PUBLIC_COGNITO_USER_POOL_ID!
-
 const JWKS = createRemoteJWKSet(
-  new URL(
-    `https://cognito-idp.${region}.amazonaws.com/${userPoolId}/.well-known/jwks.json`
-  )
+  new URL(`${env.COGNITO_ISSUER}/.well-known/jwks.json`)
 )
 
 export async function verifyJWT(token: string) {
   try {
     const { payload } = await jwtVerify(token, JWKS, {
-      issuer: `https://cognito-idp.${region}.amazonaws.com/${userPoolId}`,
+      issuer: env.COGNITO_ISSUER,
     })
     return payload
   } catch (error) {
@@ -35,7 +31,10 @@ export function withAuth(next) {
 
     let auth = null
     try {
-      auth = await verifyJWT(token)
+      const payload = await verifyJWT(token)
+      auth = {
+        id: payload.sub,
+      }
     } catch (e) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }

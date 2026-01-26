@@ -1,60 +1,105 @@
-import {
-  CognitoIdentityProviderClient,
-  AdminGetUserCommand,
-  ListUserPoolsCommand,
-  AdminListGroupsForUserCommand,
-} from "@aws-sdk/client-cognito-identity-provider"
-import { withAuth } from "@/middlewares/withAuth"
-import { NextRequest, NextResponse } from "next/server"
+import { cognito } from "@/lib/cognito"
+import env from "@/lib/env"
+import { stripe } from "@/lib/stripe"
+import { withDatabase } from "@/middlewares/withDatabase"
+import { AdminCreateUserCommand } from "@aws-sdk/client-cognito-identity-provider"
 import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb"
 import { marshall } from "@aws-sdk/util-dynamodb"
-import { withDatabase } from "@/middlewares/withDatabase"
+import { v4 as uuidv4 } from "uuid"
+import plans from "@/app/plans.json"
+import { NextResponse } from "next/server"
 
-const client = new CognitoIdentityProviderClient({
-  region: process.env.AWS_REGION,
-})
+// FIX: make it dev only
+export const POST = withDatabase(async (request, context) => {
+  const database = context.database as DynamoDBClient
 
-export async function getCognitoUser(username: string) {
-  const userCommand = new AdminGetUserCommand({
-    UserPoolId: process.env.NEXT_PUBLIC_COGNITO_USER_POOL_ID!,
-    Username: username,
-  })
-  const userOutput = await client.send(userCommand)
+  const { store, owner, email } = await request.json()
+  let shopId = uuidv4()
+  let ownerId = null
+  let customerId = null
 
-  const attrs = Object.fromEntries(
-    userOutput.UserAttributes?.map((a) => [a.Name, a.Value]) ?? []
-  )
+  // Create cognito user
+  {
+    const command = new AdminCreateUserCommand({
+      UserPoolId: env.NEXT_PUBLIC_COGNITO_USER_POOL_ID,
+      Username: email,
+    })
 
-  const groupsCommand = new AdminListGroupsForUserCommand({
-    UserPoolId: process.env.NEXT_PUBLIC_COGNITO_USER_POOL_ID!,
-    Username: username,
-  })
-  const groupsOutput = await client.send(groupsCommand)
-  const groups = groupsOutput.Groups?.map((a) => a.GroupName) ?? []
-
-  return {
-    id: attrs.sub,
-    email: attrs.email,
-    name: attrs.name ?? "",
-    role: groups[0],
+    const response = await cognito.send(command)
+    ownerId = response.User?.Attributes?.find(
+      (attribute) => attribute.Name === "sub"
+    )?.Value
   }
-}
 
-export const POST = withAuth(
-  withDatabase(async function (request: NextRequest, context) {
-    const auth = context.auth
-    const user = await getCognitoUser(auth.sub)
+  // Create stripe customer
+  {
+    const customer = await stripe.customers.create({
+      email,
+      name: owner,
+      metadata: { shopId },
+    })
 
-    // save in dynamo
-    const database = context.database as DynamoDBClient
+    customerId = customer.id
+  }
 
-    const now = new Date().toISOString()
+  /* Initialize database values */
+  const now = new Date().toISOString()
+
+  // Shop
+  {
+    const shop = {
+      id: ownerId,
+      name: store,
+    }
+    const item = { ...shop, createdAt: now, updatedAt: now }
+
+    const Item = marshall(item)
+    const command = new PutItemCommand({ TableName: "Shop", Item })
+    await database.send(command)
+  }
+
+  // Billing
+  {
+    const free = plans.find((plan) => plan.id === "free")!
+    const plan = {
+      id: free.id,
+      name: free.name,
+      description: free.description,
+      price: free.price,
+      frequency: free.frequency,
+      period: { start: now },
+    }
+    const stripe = {
+      // subscriptionId: "",
+    }
+    const billing = {
+      id: ownerId,
+      history: [{ plan, stripe }],
+    }
+    const item = { ...billing, createdAt: now, updatedAt: now }
+
+    const Item = marshall(item)
+    const command = new PutItemCommand({ TableName: "Billing", Item })
+    await database.send(command)
+  }
+
+  // User
+  {
+    const user = {
+      id: ownerId,
+      name: owner,
+      email,
+      role: "owner",
+      stripe: {
+        customerId,
+      },
+    }
     const item = { ...user, createdAt: now, updatedAt: now }
 
     const Item = marshall(item)
     const command = new PutItemCommand({ TableName: "User", Item })
     await database.send(command)
+  }
 
-    return NextResponse.json({ error: "" }, { status: 200 })
-  })
-)
+  return NextResponse.json(null, { status: 200 })
+})

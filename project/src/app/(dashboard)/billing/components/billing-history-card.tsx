@@ -23,7 +23,7 @@ export function BillingHistoryCard({ history }: BillingHistoryCardProps) {
           View your past invoices and payments.
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="max-h-40 overflow-y-scroll">
         <div className="space-y-4">
           {history.map((item, index) => (
             <div key={item.id}>

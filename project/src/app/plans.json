@@ -1,0 +1,55 @@
+[
+  {
+    "id": "free",
+    "order": 1,
+    "description": "Perfect for small online stores",
+    "features": [
+      "Up to 10 products",
+      "Basic inventory tracking",
+      "Email support",
+      "Mobile-responsive themes"
+    ],
+    "name": "Free",
+    "price": 0,
+    "frequency": "month",
+    "stripe": {}
+  },
+  {
+    "id": "monthly",
+    "order": 2,
+    "description": "Ideal for growing businesses",
+    "features": [
+      "Up to 100 products",
+      "Advanced analytics",
+      "Priority email & chat support",
+      "API access",
+      "Custom domain",
+      "Abandoned cart recovery"
+    ],
+    "name": "Monthly",
+    "price": 1500,
+    "frequency": "month",
+    "stripe": {
+      "priceId": "price_1Ss4S1E2gl2FbB4K3SVCrwr5"
+    }
+  },
+  {
+    "id": "yearly",
+    "order": 3,
+    "description": "For high-volume stores",
+    "features": [
+      "Unlimited products",
+      "Advanced reporting",
+      "24/7 priority support",
+      "Custom integrations",
+      "Dedicated account manager",
+      "Advanced security features"
+    ],
+    "name": "Yearly",
+    "price": 12000,
+    "frequency": "year",
+    "stripe": {
+      "priceId": "price_1Ss4T9E2gl2FbB4KJymzldT2"
+    }
+  }
+]
