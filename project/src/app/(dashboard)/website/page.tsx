@@ -4,7 +4,13 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent,CardHeader, CardDescription, CardTitle } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardDescription,
+  CardTitle,
+} from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import {
   Form,
@@ -21,17 +27,10 @@ import { Separator } from "@/components/ui/separator"
 import QRCode from "react-qr-code"
 
 const userFormSchema = z.object({
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-  email: z.string().email("Invalid email address"),
-  phone: z.string().optional(),
-  website: z.string().optional(),
-  location: z.string().optional(),
-  role: z.string().optional(),
-  bio: z.string().optional(),
-  company: z.string().optional(),
-  timezone: z.string().optional(),
-  language: z.string().optional(),
+  url: z.string().optional(),
+  title: z.string().optional(),
+  keywords: z.string().optional(),
+  description: z.string().optional(),
 })
 
 type UserFormValues = z.infer<typeof userFormSchema>
@@ -43,27 +42,41 @@ export default function UserSettingsPage() {
 
   const svgRef = useRef(null)
   const [imgSrc, setImgSrc] = useState("")
-  
+
   const form = useForm<UserFormValues>({
     resolver: zodResolver(userFormSchema),
     defaultValues: {
-      firstName: "",
-      lastName: "",
-      email: "",
-      phone: "",
-      website: "",
-      location: "",
-      role: "",
-      bio: "",
-      company: "",
-      timezone: "",
-      language: "",
+      url: "",
+      title: "",
+      keywords: "",
+      description: "",
     },
   })
 
-  function onSubmit(data: UserFormValues) {
-    console.log("Form submitted:", data)
-    // Here you would typically save the data
+  async function getWebsite() {
+    const response = await fetch("/api/website")
+    const { item } = await response.json()
+
+    form.reset({
+      url: item.url || "",
+      title: item.title || "",
+      keywords: item.keywords || "",
+      description: item.description || "",
+    })
+  }
+
+  useEffect(() => {
+    getWebsite()
+  }, [])
+
+  async function onSubmit(data: UserFormValues) {
+    const response = await fetch("/api/website", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ item: data }),
+    })
   }
 
   const handleFileUpload = () => {
@@ -90,6 +103,7 @@ export default function UserSettingsPage() {
     }
   }
 
+  const url = form.watch("url")
   useEffect(() => {
     if (!svgRef.current) return
 
@@ -99,27 +113,41 @@ export default function UserSettingsPage() {
 
     const encoded = window.btoa(unescape(encodeURIComponent(str)))
     setImgSrc(`data:image/svg+xml;base64,${encoded}`)
-  }, [])
+  }, [url])
 
   return (
     <div className="px-4 lg:px-6">
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
-            <Card>
-              <CardHeader>
-                <CardTitle>Website Settings</CardTitle>
-                <CardDescription>Update your website information and preferences</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-            {/* Profile Picture Section */}
-            <div className="flex items-center gap-6 ">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)}>
+          <Card>
+            <CardHeader>
+              <CardTitle>Website Settings</CardTitle>
+              <CardDescription>
+                Update your website information and preferences
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Profile Picture Section */}
+              <div className="flex items-center gap-6 ">
                 <div className="flex h-20 w-20 items-center justify-center rounded-lg">
-                  <div style={{ height: "auto", margin: "0 auto", maxWidth: 64, width: "100%" }}>
+                  <div
+                    style={{
+                      height: "auto",
+                      margin: "0 auto",
+                      maxWidth: 64,
+                      width: "100%",
+                    }}
+                  >
                     {/* Hidden SVG */}
                     <QRCode
                       ref={svgRef}
                       size={256}
-                      style={{ display: 'none', height: "auto", maxWidth: "100%", width: "100%" }}
+                      style={{
+                        display: "none",
+                        height: "auto",
+                        maxWidth: "100%",
+                        width: "100%",
+                      }}
                       value={"http://192.168.1.37:3000"}
                       viewBox={`0 0 256 256`}
                     />
@@ -133,121 +161,133 @@ export default function UserSettingsPage() {
                     )}
                   </div>
                 </div>
-              <div className="flex flex-col gap-2">
-                <div className="flex gap-2">
-                  <Button 
-                    variant="default" 
-                    size="sm"
-                    onClick={handleFileUpload}
-                    className="cursor-pointer"
-                  >
-                    <Download className="mr-2 h-4 w-4" />
-                    Download
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={handleReset}
-                    className="cursor-pointer"
-                  >
-                    SVG
-                  </Button>
+                <div className="flex flex-col gap-2">
+                  <div className="flex gap-2">
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={handleFileUpload}
+                      className="cursor-pointer"
+                    >
+                      <Download className="mr-2 h-4 w-4" />
+                      Download
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleReset}
+                      className="cursor-pointer"
+                    >
+                      SVG
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Use SVG when you want to customize the QR code
+                  </p>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Use SVG when you want to customize the QR code
-                </p>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/gif,image/png"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
               </div>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/jpeg,image/gif,image/png"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-            </div>
 
-            <Separator className="mb-10" />
-            {/* Form Fields */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* First Name */}
-              <FormField
-                control={form.control}
-                name="firstName"
-                render={({ field }) => (
-                  <FormItem className="md:col-span-2">
-                    <FormLabel>URL</FormLabel>
-                    <FormControl>
-                      <Input type="url" placeholder="Enter your website URL" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <Separator className="mb-10" />
+              {/* Form Fields */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* First Name */}
+                <FormField
+                  control={form.control}
+                  name="url"
+                  render={({ field }) => (
+                    <FormItem className="md:col-span-2">
+                      <FormLabel>URL</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Enter your website URL"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              {/* Last Name */}
-              <FormField
-                control={form.control}
-                name="lastName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Title</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter your website's title" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                {/* Last Name */}
+                <FormField
+                  control={form.control}
+                  name="title"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Title</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Enter your website's title"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              {/* Email */}
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Keywords</FormLabel>
-                    <FormControl>
-                      <Input type="email" placeholder="Enter your website's keywords" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                {/* Email */}
+                <FormField
+                  control={form.control}
+                  name="keywords"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Keywords</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Enter your website's keywords"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              {/* Bio - Full Width */}
-              <FormField
-                control={form.control}
-                name="bio"
-                render={({ field }) => (
-                  <FormItem className="md:col-span-2">
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="Enter your website's description..." 
-                        className="min-h-[100px]"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+                {/* Bio - Full Width */}
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem className="md:col-span-2">
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Enter your website's description..."
+                          className="min-h-[100px]"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
-
-            {/* Action Buttons */}
-            <div className="flex justify-start gap-3">
-              <Button type="submit" className="cursor-pointer">
-                Save Changes
-              </Button>
-              <Button variant="outline" type="button" className="cursor-pointer">
-                Cancel
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-          </form>
-        </Form>
-      </div>
+              {/* Action Buttons */}
+              <div className="flex justify-start gap-3">
+                <Button type="submit" className="cursor-pointer">
+                  Save Changes
+                </Button>
+                <Button
+                  variant="outline"
+                  type="button"
+                  className="cursor-pointer"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </form>
+      </Form>
+    </div>
   )
 }
