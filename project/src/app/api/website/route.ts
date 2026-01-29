@@ -44,6 +44,6 @@ export const PUT = withAuth(
     const command = new PutItemCommand({ TableName, Item })
     await database.send(command)
 
-    return NextResponse.json({ item }, { status: 201 })
+    return NextResponse.json({ item }, { status: 200 })
   })
 )

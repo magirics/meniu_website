@@ -69,35 +69,10 @@ export function Chat({
 
     // Auto-select first conversation if none selected
     if (!selectedConversation && conversations.length > 0) {
-      setSelectedConversation(conversations[0].id)
+      setSelectedConversation(menus[0].id)
     }
   }, [conversations, messages, users, selectedConversation, setConversations, setMessages, setUsers, setSelectedConversation])
 
-  const currentConversation = conversations.find(conv => conv.id === selectedConversation)
-  const currentMessages = selectedConversation ? messages[selectedConversation] || [] : []
-
-  const handleSendMessage = (content: string) => {
-    if (!selectedConversation) return
-
-    const newMessage = {
-      id: `msg-${Date.now()}`,
-      content,
-      timestamp: new Date().toISOString(),
-      senderId: "current-user",
-      type: "text" as const,
-      isEdited: false,
-      reactions: [],
-      replyTo: null,
-    }
-
-    addMessage(selectedConversation, newMessage)
-  }
-
-  const handleToggleMute = () => {
-    if (selectedConversation) {
-      toggleMute(selectedConversation)
-    }
-  }
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -173,7 +148,7 @@ export function Chat({
                 <>
                   <TabsContent value="settings" className="m-0">
                     {/* <MailList items={mails} /> */}
-                    <MenuForm />
+                    <MenuForm id={selectedConversation}/>
                   </TabsContent>
                   <TabsContent value="editor" className="m-0">
                     {/* <MailList items={mails.filter((item) => !item.read)} /> */}

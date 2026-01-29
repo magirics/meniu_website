@@ -33,8 +33,8 @@ export default function ChatPage() {
         setMenus(menusData as Menu[])
 
         const response = await fetch("/api/menus")
-        const menus = await response.json()
-        console.log("menus", menus)
+        const { items } = await response.json()
+        setMenus(items)
       } catch (error) {
         console.error("Failed to load chat data:", error)
       } finally {

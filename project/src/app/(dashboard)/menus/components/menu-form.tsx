@@ -41,75 +41,66 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
+const timeSlots = []
+for (let t = 0; t < 24; t++) {
+  timeSlots.unshift(`${t}:00`.padStart(5, "0"))
+}
+
 const userFormSchema = z.object({
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-  email: z.string().email("Invalid email address"),
-  phone: z.string().optional(),
-  website: z.string().optional(),
-  location: z.string().optional(),
-  role: z.string().optional(),
-  bio: z.string().optional(),
-  company: z.string().optional(),
-  timezone: z.string().optional(),
-  language: z.string().optional(),
+  name: z.string(),
+  description: z.string(),
 })
 
 type UserFormValues = z.infer<typeof userFormSchema>
 
-export default function MenuForm() {
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const [profileImage, setProfileImage] = useState<string | null>(null)
-  const [useDefaultIcon, setUseDefaultIcon] = useState(true)
-
+export default function MenuForm({ id }) {
   const svgRef = useRef(null)
   const [imgSrc, setImgSrc] = useState("")
 
   const form = useForm<UserFormValues>({
     resolver: zodResolver(userFormSchema),
     defaultValues: {
-      firstName: "",
-      lastName: "",
-      email: "",
-      phone: "",
-      website: "",
-      location: "",
-      role: "",
-      bio: "",
-      company: "",
-      timezone: "",
-      language: "",
+      name: "",
+      description: "",
     },
   })
 
-  function onSubmit(data: UserFormValues) {
-    console.log("Form submitted:", data)
-    // Here you would typically save the data
-  }
+  const [fromValue, setFromValue] = useState({
+    date: new Date(),
+    time: "00:00",
+  })
+  const [untilValue, setUntilValue] = useState({
+    date: new Date(),
+    time: "00:00",
+  })
 
-  const handleFileUpload = () => {
-    fileInputRef.current?.click()
-  }
+  async function getMenu() {
+    const response = await fetch(`/api/menus/${id}`)
+    const data = await response.json()
+    const { item } = data
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        setProfileImage(e.target?.result as string)
-        setUseDefaultIcon(false)
-      }
-      reader.readAsDataURL(file)
+    form.reset(item)
+    if (item.schedule) {
+      const { start, end } = item.schedule
+      const startTime = new Intl.DateTimeFormat(undefined, {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      }).format(new Date(start))
+      setFromValue({ date: start, time: startTime })
+
+      const endTime = new Intl.DateTimeFormat(undefined, {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      }).format(new Date(end))
+      setUntilValue({ date: end, time: endTime })
     }
   }
 
-  const handleReset = () => {
-    setProfileImage(null)
-    setUseDefaultIcon(true)
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ""
-    }
-  }
+  useEffect(() => {
+    getMenu()
+  }, [id])
 
   useEffect(() => {
     if (!svgRef.current) return
@@ -122,16 +113,32 @@ export default function MenuForm() {
     setImgSrc(`data:image/svg+xml;base64,${encoded}`)
   }, [])
 
-  const [showCalendar, setShowCalendar] = useState(false)
+  function onSubmit(data: UserFormValues) {
+    function formatTime(value) {
+      let datetime = new Date(value.date)
+      let [textHour, textMinute] = value.time.split(":")
 
-  const [formData, setFormData] = useState({
-    date: new Date(),
-    time: "00:00",
-  })
+      const hour = Number.parseInt(textHour)
+      const minute = Number.parseInt(textMinute)
+      datetime.setHours(hour, minute, 0)
+      return datetime.toISOString()
+    }
 
-  const timeSlots = []
-  for (let t = 0; t < 24; t++) {
-    timeSlots.unshift(`${t}:00`.padStart(5, "0"))
+    const item = {
+      ...data,
+      schedule: {
+        start: formatTime(fromValue),
+        end: formatTime(untilValue),
+      },
+    }
+
+    const response = fetch(`/api/menus/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "applicacion/json",
+      },
+      body: JSON.stringify({ item }),
+    })
   }
 
   return (
@@ -148,10 +155,9 @@ export default function MenuForm() {
             <CardContent className="space-y-6">
               {/* Form Fields */}
               <div className="flex flex-col gap-6">
-                {/* Last Name */}
                 <FormField
                   control={form.control}
-                  name="lastName"
+                  name="name"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Name</FormLabel>
@@ -169,7 +175,7 @@ export default function MenuForm() {
                 {/* Bio - Full Width */}
                 <FormField
                   control={form.control}
-                  name="bio"
+                  name="description"
                   render={({ field }) => (
                     <FormItem className="md:col-span-2">
                       <FormLabel>Description</FormLabel>
@@ -188,119 +194,8 @@ export default function MenuForm() {
 
               <Separator />
 
-              {/* Date and Time */}
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="flex items-center gap-2">
-                    <CalendarIcon className="w-4 h-4" />
-                    From
-                  </Label>
-                  <Popover open={showCalendar} onOpenChange={setShowCalendar}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="w-full justify-start text-left font-normal"
-                      >
-                        {format(formData.date, "PPP")}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={formData.date}
-                        onSelect={(date) => {
-                          if (date) {
-                            setFormData((prev) => ({ ...prev, date }))
-                            setShowCalendar(false)
-                          }
-                        }}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="flex items-center gap-2">
-                    <Clock className="w-4 h-4" />
-                    Time
-                  </Label>
-                  <Select
-                    value={formData.time}
-                    onValueChange={(value) =>
-                      setFormData((prev) => ({ ...prev, time: value }))
-                    }
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {timeSlots.map((time) => (
-                        <SelectItem key={time} value={time}>
-                          {time}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              {/* Date and Time */}
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="flex items-center gap-2">
-                    <CalendarIcon className="w-4 h-4" />
-                    Until
-                  </Label>
-                  <Popover open={showCalendar} onOpenChange={setShowCalendar}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="w-full justify-start text-left font-normal"
-                      >
-                        {format(formData.date, "PPP")}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={formData.date}
-                        onSelect={(date) => {
-                          if (date) {
-                            setFormData((prev) => ({ ...prev, date }))
-                            setShowCalendar(false)
-                          }
-                        }}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="flex items-center gap-2">
-                    <Clock className="w-4 h-4" />
-                    Time
-                  </Label>
-                  <Select
-                    value={formData.time}
-                    onValueChange={(value) =>
-                      setFormData((prev) => ({ ...prev, time: value }))
-                    }
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {timeSlots.map((time) => (
-                        <SelectItem key={time} value={time}>
-                          {time}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+              <Schedule value={fromValue} setValue={setFromValue} />
+              <Schedule value={untilValue} setValue={setUntilValue} />
 
               {/* Action Buttons */}
               <div className="flex justify-start gap-3">
@@ -319,6 +214,68 @@ export default function MenuForm() {
           </Card>
         </form>
       </Form>
+    </div>
+  )
+}
+
+function Schedule({ value, setValue }) {
+  const [showCalendar, setShowCalendar] = useState(false)
+
+  return (
+    <div className="grid md:grid-cols-2 gap-4">
+      <div className="space-y-2">
+        <Label className="flex items-center gap-2">
+          <CalendarIcon className="w-4 h-4" />
+          Until
+        </Label>
+        <Popover open={showCalendar} onOpenChange={setShowCalendar}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              className="w-full justify-start text-left font-normal"
+            >
+              {format(value.date, "PPP")}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="single"
+              selected={value.date}
+              onSelect={(date) => {
+                if (date) {
+                  setValue((prev) => ({ ...prev, date }))
+                  setShowCalendar(false)
+                }
+              }}
+              initialFocus
+            />
+          </PopoverContent>
+        </Popover>
+      </div>
+
+      <div className="space-y-2">
+        <Label className="flex items-center gap-2">
+          <Clock className="w-4 h-4" />
+          Time
+        </Label>
+        <Select
+          value={value.time}
+          onValueChange={(value) =>
+            setValue((prev) => ({ ...prev, time: value }))
+          }
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {timeSlots.map((time) => (
+              <SelectItem key={time} value={time}>
+                {time}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
     </div>
   )
 }
