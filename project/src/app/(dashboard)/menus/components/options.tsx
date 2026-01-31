@@ -7,13 +7,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import {
-  Bell,
-  BellOff,
   Copy,
   MoreVertical,
-  Search,
   Trash,
-  Users,
 } from "lucide-react"
 
 export default function Options({ onDuplicate, onDelete }) {

@@ -103,3 +103,8 @@ export const POST = withDatabase(async (request, context) => {
 
   return NextResponse.json(null, { status: 200 })
 })
+
+
+// const { customAlphabet } = require("nanoid")
+// const alphabet = "0123456789abcdefghijklmnopqrstuvwxyz"
+// const nanoid = customAlphabet(alphabet, 21)

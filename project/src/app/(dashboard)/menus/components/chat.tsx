@@ -10,8 +10,15 @@ import { ConversationList } from "./conversation-list"
 import { ChatHeader } from "./chat-header"
 import { MessageList } from "./message-list"
 import { MessageInput } from "./message-input"
-import { useChat, type Conversation, type Message, type User, type Menu } from "../use-chat"
+import {
+  useChat,
+  type Conversation,
+  type Message,
+  type User,
+  type Menu,
+} from "../use-chat"
 import MenuForm from "./menu-form"
+import MenuEditor from "./menu-editor"
 
 interface ChatProps {
   conversations: Conversation[]
@@ -20,12 +27,7 @@ interface ChatProps {
   menus: Menu[]
 }
 
-export function Chat({
-  conversations,
-  messages,
-  users,
-  menus,
-}: ChatProps) {
+export function Chat({ conversations, messages, users, menus }: ChatProps) {
   const {
     selectedConversation,
     setSelectedConversation,
@@ -41,18 +43,19 @@ export function Chat({
   // Close sidebar when clicking outside on mobile
   useEffect(() => {
     const handleResize = () => {
-      if (typeof window !== "undefined" ? window.innerWidth : 0 >= 1024) { // lg breakpoint
+      if (typeof window !== "undefined" ? window.innerWidth : 0 >= 1024) {
+        // lg breakpoint
         setIsSidebarOpen(false)
       }
     }
 
     if (typeof window !== "undefined") {
-      window.addEventListener('resize', handleResize)
+      window.addEventListener("resize", handleResize)
     }
 
     return () => {
       if (typeof window !== "undefined") {
-        window.removeEventListener('resize', handleResize)
+        window.removeEventListener("resize", handleResize)
       }
     }
   }, [])
@@ -63,20 +66,30 @@ export function Chat({
     setUsers(users)
 
     // Set messages for all conversations
-    Object.entries(messages).forEach(([conversationId, conversationMessages]) => {
-      setMessages(conversationId, conversationMessages)
-    })
+    Object.entries(messages).forEach(
+      ([conversationId, conversationMessages]) => {
+        setMessages(conversationId, conversationMessages)
+      }
+    )
 
     // Auto-select first conversation if none selected
     if (!selectedConversation && conversations.length > 0) {
       setSelectedConversation(menus[0].id)
     }
-  }, [conversations, messages, users, selectedConversation, setConversations, setMessages, setUsers, setSelectedConversation])
-
+  }, [
+    conversations,
+    messages,
+    users,
+    selectedConversation,
+    setConversations,
+    setMessages,
+    setUsers,
+    setSelectedConversation,
+  ])
 
   return (
     <TooltipProvider delayDuration={0}>
-      <div className="h-full min-h-[600px] max-h-[calc(100vh-200px)] flex rounded-lg border bg-background">
+      <div className="min-h-[600px] max-h-[calc(100vh-220px)] flex rounded-lg border bg-background">
         {/* Mobile Sidebar Overlay */}
         {isSidebarOpen && (
           <div
@@ -86,13 +99,15 @@ export function Chat({
         )}
 
         {/* Conversations Sidebar - Responsive */}
-        <div className={`
+        <div
+          className={`
           w-100 border-r bg-background flex-shrink-0
-          ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+          ${isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
           lg:relative lg:block
           fixed inset-y-0 left-0 z-50
           transition-transform duration-300 ease-in-out
-        `}>
+        `}
+        >
           {/* Sidebar Header with Close Button (Mobile Only) */}
           <div className="lg:hidden p-4 border-b flex items-center justify-between bg-background">
             <h2 className="text-lg font-semibold">Messages</h2>
@@ -117,9 +132,9 @@ export function Chat({
           />
         </div>
 
-        <Tabs defaultValue="settings" className="grow">
+        <Tabs defaultValue="settings" className="grow overflow-hidden">
           {/* Chat Panel - Flexible Width */}
-          <div className="flex-1 flex flex-col min-w-0 bg-background">
+          <div className="flex-1 flex flex-col min-w-0 bg-background h-full">
             {/* Chat Header with Hamburger Menu */}
             <div className="flex items-center h-16 px-4 border-b bg-background">
               {/* Hamburger Menu Button - Only visible when sidebar is hidden on mobile */}
@@ -135,30 +150,36 @@ export function Chat({
               <div className="flex-1">
                 <div className="flex items-center px-4 py-1.5">
                   <TabsList>
-                    <TabsTrigger value="settings" className="cursor-pointer">Settings</TabsTrigger>
-                    <TabsTrigger value="editor" className="cursor-pointer">Editor</TabsTrigger>
+                    <TabsTrigger value="settings" className="cursor-pointer">
+                      Settings
+                    </TabsTrigger>
+                    <TabsTrigger value="editor" className="cursor-pointer">
+                      Editor
+                    </TabsTrigger>
                   </TabsList>
                 </div>
               </div>
             </div>
 
             {/* Messages */}
-            <div className="flex-1 flex flex-col min-h-0">
+            <div className="flex-1 flex flex-col min-h-0 overflow-scroll">
               {selectedConversation ? (
                 <>
                   <TabsContent value="settings" className="m-0">
                     {/* <MailList items={mails} /> */}
-                    <MenuForm id={selectedConversation}/>
+                    <MenuForm id={selectedConversation} />
                   </TabsContent>
                   <TabsContent value="editor" className="m-0">
                     {/* <MailList items={mails.filter((item) => !item.read)} /> */}
-                    Editor
+                    <MenuEditor id={selectedConversation} />
                   </TabsContent>
                 </>
               ) : (
                 <div className="flex-1 flex items-center justify-center">
                   <div className="text-center">
-                    <h3 className="text-lg font-semibold mb-2">Welcome to Chat</h3>
+                    <h3 className="text-lg font-semibold mb-2">
+                      Welcome to Chat
+                    </h3>
                     <p className="text-muted-foreground">
                       Select a conversation to start messaging
                     </p>

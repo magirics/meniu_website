@@ -4,10 +4,6 @@ import { withDatabase } from "./middlewares/withDatabase"
 import { ScanCommand } from "@aws-sdk/client-dynamodb"
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb"
 
-const { customAlphabet } = require("nanoid")
-const alphabet = "0123456789abcdefghijklmnopqrstuvwxyz"
-const nanoid = customAlphabet(alphabet, 21)
-
 async function getPage(url, context) {
   const database = context.database
 
@@ -44,7 +40,6 @@ export const proxy = withDatabase(async (request: NextRequest, context) => {
   if (parts.length > 2) {
     // it's a subdomain
     subdomain = parts.slice(0, parts.length - 2).join(".")
-    console.log("nanoid() =", nanoid())
     const id = await getPage(subdomain, context)
 
     // FIX
