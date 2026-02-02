@@ -1,0 +1,9 @@
+.root {
+  position: relative;
+}
+
+.tools {
+  position: absolute;
+  top: 0;
+  transform: translateY(calc(-100% - 2px));
+}

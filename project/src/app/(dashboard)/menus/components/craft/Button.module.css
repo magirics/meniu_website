@@ -1,0 +1,15 @@
+.button {
+  padding: 0.5rem;
+  border: none;
+}
+
+.button:hover {
+  background-color: whitesmoke;
+  cursor: pointer;
+}
+
+.icon {
+  width: 1rem;
+  height: 1rem;
+  vertical-align: bottom;
+}
