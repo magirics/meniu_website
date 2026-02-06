@@ -43,9 +43,8 @@ interface ChatHeaderProps {
   onToggleInfo?: () => void
 }
 
-export function ChatHeader() {
-
+export function ChatHeader({ id }) {
   // Fetch from database
 
-  return <ToolBar value="" css=""></ToolBar>
+  return <ToolBar id={id} value="" css=""></ToolBar>
 }

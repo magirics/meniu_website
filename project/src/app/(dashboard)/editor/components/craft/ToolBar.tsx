@@ -21,10 +21,12 @@ import {
   Candy,
   Copy,
   MoreVertical,
+  Plus,
   Rows3,
   Save,
   Trash,
   Type,
+  Upload,
 } from "lucide-react"
 import {
   CategoryBlock,
@@ -36,8 +38,9 @@ import {
 // import { createMenu, removeMenu, updateMenu } from "@/actions/menu"
 import { minify } from "csso"
 import craftjs from "@craftjs/core/package.json"
+import { useRef } from "react"
 
-export default function ToolBar({ value, css }) {
+export default function ToolBar({ value, css, id }) {
   const { query, actions } = useEditor()
 
   const onSave = async () => {
@@ -78,6 +81,42 @@ export default function ToolBar({ value, css }) {
     await onSave()
   }
 
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    // Example: get presigned URL from server
+    const res = await fetch("/api/files", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        menu: id,
+        filename: file.name,
+        contentType: file.type,
+      }),
+    })
+    const { url } = await res.json()
+
+    // Upload directly to S3
+    await fetch(url, {
+      method: "PUT",
+      headers: { "Content-Type": file.type },
+      body: file,
+    })
+
+    alert("File uploaded!")
+  }
+
+  const onUpload = async () => {
+    // Open file picker
+    inputRef.current?.click()
+  }
+
   return (
     <div className="items-center justify-between h-full hidden md:flex">
       {/* Right side - Action buttons */}
@@ -85,23 +124,23 @@ export default function ToolBar({ value, css }) {
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Dummy component={<ProductBlock />} icon={Candy}>
-                Product
-              </Dummy>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="cursor-pointer"
+                onClick={onUpload}
+              >
+                <Upload className="h-4 w-4" /> Upload
+                <input
+                  ref={inputRef}
+                  type="file"
+                  style={{ display: "none" }}
+                  onChange={handleFileChange}
+                />
+              </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Product</p>
-            </TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Dummy component={<CategoryBlock />} icon={Rows3}>
-                Category
-              </Dummy>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Category</p>
+              <p>Upload</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>

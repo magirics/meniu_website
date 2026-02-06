@@ -21,7 +21,20 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Textarea } from "@/components/ui/textarea"
-import { CalendarIcon, Clock, Download, Plus } from "lucide-react"
+import {
+  ArrowUp,
+  ArrowUpIcon,
+  CalendarIcon,
+  CircleX,
+  Clock,
+  Download,
+  FileBraces,
+  FileCode,
+  FileImage,
+  FileType,
+  ListTodo,
+  Plus,
+} from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import { Separator } from "@/components/ui/separator"
 import QRCode from "react-qr-code"
@@ -74,34 +87,6 @@ export default function MenuForm({ id }) {
     time: "00:00",
   })
 
-  async function getMenu() {
-    const response = await fetch(`/api/menus/${id}`)
-    const data = await response.json()
-    const { item } = data
-
-    form.reset(item)
-    if (item.schedule) {
-      const { start, end } = item.schedule
-      const startTime = new Intl.DateTimeFormat(undefined, {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      }).format(new Date(start))
-      setFromValue({ date: start, time: startTime })
-
-      const endTime = new Intl.DateTimeFormat(undefined, {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      }).format(new Date(end))
-      setUntilValue({ date: end, time: endTime })
-    }
-  }
-
-  useEffect(() => {
-    getMenu()
-  }, [id])
-
   useEffect(() => {
     if (!svgRef.current) return
 
@@ -141,79 +126,87 @@ export default function MenuForm({ id }) {
     })
   }
 
+  const stats = {
+    total: 0,
+    completed: 0,
+  }
+  const [menu, setMenu] = useState({ files: [] })
+  async function getMenu() {
+    const response = await fetch(`/api/menus/${id}`)
+    const data = await response.json()
+    setMenu(data.item)
+  }
+
+  useEffect(() => {
+    getMenu()
+  }, [id])
+
+  const onDelete = async (file) => {
+    const key = encodeURIComponent(file.key)
+    const response = await fetch(`/api/files/${key}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ id }),
+    })
+    console.log(response)
+    alert(`${file.name} deleted!`)
+  }
+
   return (
-    <div className="px-4 py-4 lg:px-6 lg:py-6">
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
-          <Card>
-            <CardHeader>
-              <CardTitle>Website Settings</CardTitle>
-              <CardDescription>
-                Update your website information and preferences
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Form Fields */}
-              <div className="flex flex-col gap-6">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Name</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Enter the menu's title"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+    <div className="flex gap-4 px-4 py-4 lg:px-6 lg:py-6">
+      {menu.files.map((file) => (
+        <div key={file.key} className="inline-block text-sm relative group">
+          <CircleX
+            onClick={() => onDelete(file)}
+            className="h-6 w-6 absolute stroke-1 right-0 to-0 translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100"
+          />
+          <FileType className="h-8 w-8 stroke-1 m-auto" />
+          <span className="max-w-16 truncate inline-block" title={file.name}>
+            {file.name}
+          </span>
+        </div>
+      ))}
 
-                {/* Bio - Full Width */}
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem className="md:col-span-2">
-                      <FormLabel>Description</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Enter the menu's description..."
-                          className="min-h-[100px]"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+      {/* {files.images.map((file) => (
+        <div className="inline-block">
+          <FileImage className="h-8 w-8 stroke-1 m-auto" />
+          {file.name}
+        </div>
+      ))}
+
+      {files.scripts.map((file) => (
+        <div className="inline-block">
+          <FileCode className="h-8 w-8 stroke-1 m-auto" />
+          {file.name}
+        </div>
+      ))} */}
+
+      {/* <Card>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-muted-foreground text-sm font-medium">
+                Total Tasks
+              </p>
+              <div className="mt-1 flex items-baseline gap-2">
+                <span className="text-2xl font-bold">{stats.total}</span>
+                <span className="flex items-center gap-0.5 text-sm text-green-500">
+                  <ArrowUp className="size-3.5" />
+                  {stats.total > 0
+                    ? Math.round((stats.completed / stats.total) * 100)
+                    : 0}
+                  %
+                </span>
               </div>
-
-              <Separator />
-
-              <Schedule value={fromValue} setValue={setFromValue} />
-              <Schedule value={untilValue} setValue={setUntilValue} />
-
-              {/* Action Buttons */}
-              <div className="flex justify-start gap-3">
-                <Button type="submit" className="cursor-pointer">
-                  Save Changes
-                </Button>
-                <Button
-                  variant="outline"
-                  type="button"
-                  className="cursor-pointer"
-                >
-                  Cancel
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </form>
-      </Form>
+            </div>
+            <div className="bg-secondary rounded-lg p-3">
+              <ListTodo className="size-6" />
+            </div>
+          </div>
+        </CardContent>
+      </Card> */}
     </div>
   )
 }

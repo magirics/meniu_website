@@ -26,6 +26,7 @@ import {
 } from "../use-chat"
 import MenuForm from "./menu-form"
 import MenuEditor from "./menu-editor"
+import { ChatHeaderFiles } from "./chat-header-files"
 
 interface ChatProps {
   conversations: Conversation[]
@@ -94,7 +95,7 @@ export function Chat({ conversations, messages, users, menus }: ChatProps) {
     setSelectedConversation,
   ])
 
-  const [tab, setTab] = useState("settings")
+  const [tab, setTab] = useState("files")
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -166,15 +167,17 @@ export function Chat({ conversations, messages, users, menus }: ChatProps) {
                 <div className="flex-1">
                   <div className="flex items-center px-4 py-1.5 justify-between">
                     <TabsList>
-                      <TabsTrigger value="settings" className="cursor-pointer">
-                        Settings
+                      <TabsTrigger value="files" className="cursor-pointer">
+                        Files
                       </TabsTrigger>
                       <TabsTrigger value="editor" className="cursor-pointer">
                         Editor
                       </TabsTrigger>
                     </TabsList>
 
-                    {tab === "editor" && <ChatHeader />}
+                    {tab === "files" && <ChatHeaderFiles id={selectedConversation} />}
+                    {tab === "editor" && <ChatHeader id={selectedConversation} />}
+                    
                   </div>
                 </div>
               </div>
@@ -183,13 +186,13 @@ export function Chat({ conversations, messages, users, menus }: ChatProps) {
               <div className="flex-1 flex flex-col min-h-0 overflow-scroll">
                 {selectedConversation ? (
                   <>
-                    <TabsContent value="settings" className="m-0">
+                    <TabsContent value="files" className="m-0">
                       {/* <MailList items={mails} /> */}
                       <MenuForm id={selectedConversation} />
                     </TabsContent>
                     <TabsContent value="editor" className="m-0">
-                      {/* <MailList items={mails.filter((item) => !item.read)} /> */}
                       <MenuEditor id={selectedConversation} />
+                      {/* <MailList items={mails.filter((item) => !item.read)} /> */}
                     </TabsContent>
                   </>
                 ) : (
