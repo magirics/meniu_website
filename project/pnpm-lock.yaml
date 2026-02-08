@@ -26,6 +26,9 @@ importers:
       '@aws-sdk/util-dynamodb':
         specifier: ^3.971.0
         version: 3.971.0(@aws-sdk/client-dynamodb@3.971.0)
+      '@babel/standalone':
+        specifier: ^7.29.1
+        version: 7.29.1
       '@craftjs/core':
         specifier: ^0.2.12
         version: 0.2.12(react@19.2.3)
@@ -759,6 +762,10 @@ packages:
     resolution: {integrity: sha512-KKBU1VGYR7ORr3At5HAtUQ+TV3SzRCXmA/8OdDZiLDBIZxVyzXuztPjfLd3BV1PRAQGCMWWSHYhL0F8d5uHBDQ==}
     engines: {node: '>=6.0.0'}
     hasBin: true
+
+  '@babel/standalone@7.29.1':
+    resolution: {integrity: sha512-z42abD0C6fiHfgLyCWw8PYv6FCJ0IGVtSCxXk/NPykWO5LNIEGfdLDJ3HdYqlPcAhwtQ3oKH1PvNj2JGpTxQKg==}
+    engines: {node: '>=6.9.0'}
 
   '@babel/template@7.27.2':
     resolution: {integrity: sha512-LPDZ85aEJyYSd18/DkjNh4/y1ntkE5KwUHWTiqgRxruuZL2F1yuHligVHLvcHY2vMHXttKFpJn6LwfI7cw7ODw==}
@@ -5652,6 +5659,8 @@ snapshots:
   '@babel/parser@7.28.5':
     dependencies:
       '@babel/types': 7.28.5
+
+  '@babel/standalone@7.29.1': {}
 
   '@babel/template@7.27.2':
     dependencies:

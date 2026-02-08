@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/tooltip"
 import { type Conversation, type User } from "../use-chat"
 import ToolBar from "./craft/ToolBar"
+import ToolBar2 from "./craft/ToolBar2"
 
 interface ChatHeaderProps {
   conversation: Conversation | null
@@ -46,5 +47,5 @@ interface ChatHeaderProps {
 export function ChatHeader({ id }) {
   // Fetch from database
 
-  return <ToolBar id={id} value="" css=""></ToolBar>
+  return <ToolBar2 id={id} value="" css=""></ToolBar2>
 }

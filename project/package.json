@@ -15,6 +15,7 @@
     "@aws-sdk/lib-dynamodb": "^3.980.0",
     "@aws-sdk/s3-request-presigner": "^3.980.0",
     "@aws-sdk/util-dynamodb": "^3.971.0",
+    "@babel/standalone": "^7.29.1",
     "@craftjs/core": "^0.2.12",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/modifiers": "^9.0.0",

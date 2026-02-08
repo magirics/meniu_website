@@ -29,6 +29,7 @@ import {
 import { useChat, type Conversation, type Menu } from "../use-chat"
 import Options from "./options"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 
 interface ConversationListProps {
   menus: Menu[]
