@@ -1,0 +1,216 @@
+"use client"
+
+import { format, isToday, isYesterday, isThisWeek, isThisYear } from "date-fns"
+import {
+  Search,
+  Pin,
+  VolumeX,
+  MoreVertical,
+  Users,
+  Hash,
+  Settings,
+  UserPlus,
+  Filter,
+} from "lucide-react"
+
+import { cn } from "@/lib/utils"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { useChat, type Conversation, type Menu } from "../use-chat"
+import Options from "./options"
+import { useRouter } from "next/navigation"
+import Link from "next/link"
+
+interface ConversationListProps {
+  menus: Menu[]
+  conversations: Conversation[]
+  selectedConversation: string | null
+  onSelectConversation: (conversationId: string) => void
+}
+
+// Enhanced time formatting function
+function formatMessageTime(timestamp: string): string {
+  const date = new Date(timestamp)
+
+  if (isToday(date)) {
+    return format(date, "h:mm a") // 3:30 PM
+  } else if (isYesterday(date)) {
+    return "Yesterday"
+  } else if (isThisWeek(date)) {
+    return format(date, "EEEE") // Day name
+  } else if (isThisYear(date)) {
+    return format(date, "MMM d") // Jan 15
+  } else {
+    return format(date, "dd/MM/yy") // 15/01/24
+  }
+}
+
+export function ConversationList({
+  menus,
+  conversations,
+  selectedConversation,
+  onSelectConversation,
+}: ConversationListProps) {
+  const { searchQuery, setSearchQuery } = useChat()
+
+  const filteredMenus = menus.filter((menu) => {
+    if (searchQuery === "" || searchQuery.trim() === "") return true
+    const queries = searchQuery
+      .toLowerCase()
+      .split(",")
+      .map((query) => query.trim())
+      .filter((query) => query !== "")
+    return queries.some(
+      (query) =>
+        menu.name.toLowerCase().includes(query) ||
+        menu.description.toLowerCase().includes(query)
+    )
+  })
+
+  const sortedMenus = filteredMenus.sort((a, b) => {
+    // Default menu first
+    if (a.default) return -1
+    if (b.default) return 1
+
+    // Scheduled menus last
+    if (!a.schedule && b.schedule) return 1
+    if (a.schedule && !b.schedule) return -1
+    if (!a.schedule && !b.schedule)
+      return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+
+    // Then by schedule start
+    return (
+      new Date(b.schedule.start).getTime() -
+      new Date(a.schedule.start).getTime()
+    )
+  })
+
+  const router = useRouter()
+
+  const onDuplicate = async (id) => {
+    const response = await fetch(`/api/menus/${id}`, {
+      method: "POST",
+    })
+    router.refresh()
+  }
+  const onDelete = async (id) => {
+    const response = await fetch(`/api/menus/${id}`, {
+      method: "DELETE",
+    })
+    router.refresh()
+  }
+
+  return (
+    <div className="flex flex-col h-full overflow-hidden">
+      {/* Header - Hidden on mobile (handled by parent) */}
+      <div className="hidden lg:flex items-center justify-between h-16 px-4 border-b flex-shrink-0">
+        <h2 className="text-lg font-semibold">Menus</h2>
+      </div>
+
+      {/* Search */}
+      <div className="px-4 py-3 border-b flex-shrink-0">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            type="text"
+            placeholder="Search menus..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9 cursor-text"
+          />
+        </div>
+      </div>
+
+      {/* Conversations */}
+      <ScrollArea className="flex-1">
+        <div className="p-2">
+          {sortedMenus.map((conversation) => (
+            <Link key={conversation.id} href={`/menus/${conversation.id}`}>
+              <div
+                className={cn(
+                  "flex items-center gap-3 p-3 rounded-lg cursor-pointer relative overflow-hidden hover:bg-accent/50 transition-colors",
+                  selectedConversation === conversation.id
+                    ? "bg-accent text-accent-foreground"
+                    : ""
+                )}
+                onClick={() => onSelectConversation(conversation.id)}
+              >
+                {/* Avatar with online indicator */}
+                <div className="relative flex-shrink-0">
+                  <Avatar
+                    className={cn(
+                      "h-12 w-12",
+                      selectedConversation === conversation.id &&
+                        "ring-2 ring-background"
+                    )}
+                  >
+                    <AvatarImage
+                      src={conversation.avatar}
+                      alt={conversation.name}
+                    />
+                    <AvatarFallback className="text-4xl">
+                      {conversation.avatar}
+                    </AvatarFallback>
+                  </Avatar>
+
+                  {/* Online indicator for direct messages */}
+                  {conversation.active && (
+                    <div className="absolute -bottom-1 -right-1 h-4 w-4 bg-green-500 border-2 border-background rounded-full" />
+                  )}
+
+                  {/* Group indicator */}
+                  {conversation.type === "group" && (
+                    <div className="absolute -bottom-1 -right-1 h-4 w-4 bg-blue-500 border-2 border-background rounded-full flex items-center justify-center">
+                      <Hash className="h-2 w-2 text-white" />
+                    </div>
+                  )}
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 min-w-0 overflow-hidden">
+                  <div className="flex items-center justify-between mb-1 min-w-0">
+                    <div className="flex items-center gap-1 min-w-0 flex-1 overflow-hidden pr-2">
+                      <h3 className="font-medium truncate min-w-0 max-w-[160px] lg:max-w-[180px]">
+                        {conversation.name}
+                      </h3>
+                      {conversation.default && (
+                        <Pin className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                      )}
+                      {conversation.isMuted && (
+                        <VolumeX className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                      )}
+                    </div>
+                    <span className="text-xs text-muted-foreground flex-shrink-0 whitespace-nowrap">
+                      {conversation.schedule &&
+                        formatMessageTime(conversation.schedule.start)}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-2 min-w-0">
+                    <p className="text-sm text-muted-foreground truncate flex-1 min-w-0 max-w-[180px] lg:max-w-[200px] pr-2">
+                      {conversation.description}
+                    </p>
+                    <Options
+                      onDuplicate={() => onDuplicate(conversation.id)}
+                      onDelete={() => onDelete(conversation.id)}
+                    />
+                  </div>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </ScrollArea>
+    </div>
+  )
+}
