@@ -1,0 +1,94 @@
+[
+    {
+    "id": "MENU_001",
+    "avatar": "",
+    "name": "Default",
+    "description": "Default menu",
+    "active": true,
+    "default": true,
+
+    "type": "direct",
+    "participants": ["1"],
+    "lastMessage": {
+      "id": "msg-1-4",
+      "content": "Thanks for the quick update! The dashboard looks amazing 🎉",
+      "timestamp": "2025-08-11T15:30:00Z",
+      "senderId": "1"
+    },
+    "unreadCount": 2,
+    "isPinned": true,
+    "isMuted": false
+  },
+  {
+    "id": "MENU_002",
+    "avatar": "🎃",
+    "name": "Halloween 2025",
+    "description": "50% off on anything sweet",
+    "schedule": {
+      "start": "2025-10-31T00:00:00Z",
+      "end": "2025-11-01T00:00:00Z"
+    },
+    "active": false,
+    "default": false,
+
+    "type": "direct",
+    "participants": ["1"],
+    "lastMessage": {
+      "id": "msg-1-4",
+      "content": "Thanks for the quick update! The dashboard looks amazing 🎉",
+      "timestamp": "2025-08-11T15:30:00Z",
+      "senderId": "1"
+    },
+    "unreadCount": 2,
+    "isPinned": true,
+    "isMuted": false
+  },
+  {
+    "id": "MENU_003",
+    "avatar": "🎅",
+    "name": "Christmas 2025",
+    "description": "60% off on toys",
+    "schedule": {
+      "start": "2025-12-25T00:00:00Z",
+      "end": "2025-12-26T00:00:00Z"
+    },
+    "active": false,
+    "default": false,
+
+    "type": "direct",
+    "participants": ["1"],
+    "lastMessage": {
+      "id": "msg-1-4",
+      "content": "Thanks for the quick update! The dashboard looks amazing 🎉",
+      "timestamp": "2025-08-11T15:30:00Z",
+      "senderId": "1"
+    },
+    "unreadCount": 2,
+    "isPinned": true,
+    "isMuted": false
+  },
+  {
+    "id": "MENU_004",
+    "avatar": "👽",
+    "name": "Alien 2025",
+    "description": "60% off on fridays",
+    "schedule": {
+      "start": "2026-01-01T00:00:00Z",
+      "end": "2026-06-01T00:00:00Z"
+    },
+    "active": false,
+    "default": false,
+
+    "type": "direct",
+    "participants": ["1"],
+    "lastMessage": {
+      "id": "msg-1-4",
+      "content": "Thanks for the quick update! The dashboard looks amazing 🎉",
+      "timestamp": "2025-08-11T15:30:00Z",
+      "senderId": "1"
+    },
+    "unreadCount": 2,
+    "isPinned": true,
+    "isMuted": false
+  }
+]
