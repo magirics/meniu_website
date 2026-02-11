@@ -29,6 +29,7 @@ import {
 import { useChat, type Conversation, type Menu } from "../use-chat"
 import Options from "./options"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 
 interface ConversationListProps {
   menus: Menu[]
@@ -134,78 +135,79 @@ export function ConversationList({
       <ScrollArea className="flex-1">
         <div className="p-2">
           {sortedMenus.map((conversation) => (
-            <div
-              key={conversation.id}
-              className={cn(
-                "flex items-center gap-3 p-3 rounded-lg cursor-pointer relative overflow-hidden hover:bg-accent/50 transition-colors",
-                selectedConversation === conversation.id
-                  ? "bg-accent text-accent-foreground"
-                  : ""
-              )}
-              onClick={() => onSelectConversation(conversation.id)}
-            >
-              {/* Avatar with online indicator */}
-              <div className="relative flex-shrink-0">
-                <Avatar
-                  className={cn(
-                    "h-12 w-12",
-                    selectedConversation === conversation.id &&
-                      "ring-2 ring-background"
+            <Link key={conversation.id} href={`/menus/${conversation.id}`}>
+              <div
+                className={cn(
+                  "flex items-center gap-3 p-3 rounded-lg cursor-pointer relative overflow-hidden hover:bg-accent/50 transition-colors",
+                  selectedConversation === conversation.id
+                    ? "bg-accent text-accent-foreground"
+                    : ""
+                )}
+                onClick={() => onSelectConversation(conversation.id)}
+              >
+                {/* Avatar with online indicator */}
+                <div className="relative flex-shrink-0">
+                  <Avatar
+                    className={cn(
+                      "h-12 w-12",
+                      selectedConversation === conversation.id &&
+                        "ring-2 ring-background"
+                    )}
+                  >
+                    <AvatarImage
+                      src={conversation.avatar}
+                      alt={conversation.name}
+                    />
+                    <AvatarFallback className="text-4xl">
+                      {conversation.avatar}
+                    </AvatarFallback>
+                  </Avatar>
+
+                  {/* Online indicator for direct messages */}
+                  {conversation.active && (
+                    <div className="absolute -bottom-1 -right-1 h-4 w-4 bg-green-500 border-2 border-background rounded-full" />
                   )}
-                >
-                  <AvatarImage
-                    src={conversation.avatar}
-                    alt={conversation.name}
-                  />
-                  <AvatarFallback className="text-4xl">
-                    {conversation.avatar}
-                  </AvatarFallback>
-                </Avatar>
 
-                {/* Online indicator for direct messages */}
-                {conversation.active && (
-                  <div className="absolute -bottom-1 -right-1 h-4 w-4 bg-green-500 border-2 border-background rounded-full" />
-                )}
-
-                {/* Group indicator */}
-                {conversation.type === "group" && (
-                  <div className="absolute -bottom-1 -right-1 h-4 w-4 bg-blue-500 border-2 border-background rounded-full flex items-center justify-center">
-                    <Hash className="h-2 w-2 text-white" />
-                  </div>
-                )}
-              </div>
-
-              {/* Content */}
-              <div className="flex-1 min-w-0 overflow-hidden">
-                <div className="flex items-center justify-between mb-1 min-w-0">
-                  <div className="flex items-center gap-1 min-w-0 flex-1 overflow-hidden pr-2">
-                    <h3 className="font-medium truncate min-w-0 max-w-[160px] lg:max-w-[180px]">
-                      {conversation.name}
-                    </h3>
-                    {conversation.default && (
-                      <Pin className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                    )}
-                    {conversation.isMuted && (
-                      <VolumeX className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                    )}
-                  </div>
-                  <span className="text-xs text-muted-foreground flex-shrink-0 whitespace-nowrap">
-                    {conversation.schedule &&
-                      formatMessageTime(conversation.schedule.start)}
-                  </span>
+                  {/* Group indicator */}
+                  {conversation.type === "group" && (
+                    <div className="absolute -bottom-1 -right-1 h-4 w-4 bg-blue-500 border-2 border-background rounded-full flex items-center justify-center">
+                      <Hash className="h-2 w-2 text-white" />
+                    </div>
+                  )}
                 </div>
 
-                <div className="flex items-center justify-between gap-2 min-w-0">
-                  <p className="text-sm text-muted-foreground truncate flex-1 min-w-0 max-w-[180px] lg:max-w-[200px] pr-2">
-                    {conversation.description}
-                  </p>
-                  <Options
-                    onDuplicate={() => onDuplicate(conversation.id)}
-                    onDelete={() => onDelete(conversation.id)}
-                  />
+                {/* Content */}
+                <div className="flex-1 min-w-0 overflow-hidden">
+                  <div className="flex items-center justify-between mb-1 min-w-0">
+                    <div className="flex items-center gap-1 min-w-0 flex-1 overflow-hidden pr-2">
+                      <h3 className="font-medium truncate min-w-0 max-w-[160px] lg:max-w-[180px]">
+                        {conversation.name}
+                      </h3>
+                      {conversation.default && (
+                        <Pin className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                      )}
+                      {conversation.isMuted && (
+                        <VolumeX className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                      )}
+                    </div>
+                    <span className="text-xs text-muted-foreground flex-shrink-0 whitespace-nowrap">
+                      {conversation.schedule &&
+                        formatMessageTime(conversation.schedule.start)}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-2 min-w-0">
+                    <p className="text-sm text-muted-foreground truncate flex-1 min-w-0 max-w-[180px] lg:max-w-[200px] pr-2">
+                      {conversation.description}
+                    </p>
+                    <Options
+                      onDuplicate={() => onDuplicate(conversation.id)}
+                      onDelete={() => onDelete(conversation.id)}
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </ScrollArea>

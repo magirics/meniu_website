@@ -178,7 +178,7 @@ export function ConversationList({
 
               {/* Content */}
               <div className="flex-1 min-w-0 overflow-hidden">
-                <Link href={`/editor/${conversation.id}`}>
+                <Link href={`/code/${conversation.id}`}>
                   <div className="flex items-center justify-between mb-1 min-w-0">
                     <div className="flex items-center gap-1 min-w-0 flex-1 overflow-hidden pr-2">
                       <h3 className="font-medium truncate min-w-0 max-w-[160px] lg:max-w-[180px]">

@@ -133,81 +133,13 @@ export function Chat({ conversations, messages, users, menus }: ChatProps) {
           <ConversationList
             menus={menus}
             conversations={conversations}
-            selectedConversation={selectedConversation}
+            selectedConversation={null}
             onSelectConversation={(id) => {
               setSelectedConversation(id)
               setIsSidebarOpen(false) // Close sidebar on mobile after selection
             }}
           />
         </div>
-
-        <CraftEditor
-          resolver={{ TitleBlock, MainBlock, CategoryBlock, ProductBlock }}
-        >
-          <Tabs
-            value={tab}
-            onValueChange={setTab}
-            className="grow overflow-hidden"
-          >
-            {/* Chat Panel - Flexible Width */}
-            <div className="flex-1 flex flex-col min-w-0 bg-background h-full">
-              {/* Chat Header with Hamburger Menu */}
-              <div className="flex items-center h-16 px-4 border-b bg-background">
-                {/* Hamburger Menu Button - Only visible when sidebar is hidden on mobile */}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsSidebarOpen(true)}
-                  className="cursor-pointer lg:hidden mr-2"
-                >
-                  <Menu className="h-4 w-4" />
-                </Button>
-
-                <div className="flex-1">
-                  <div className="flex items-center px-4 py-1.5 justify-between">
-                    <TabsList>
-                      <TabsTrigger value="settings" className="cursor-pointer">
-                        Settings
-                      </TabsTrigger>
-                      <TabsTrigger value="editor" className="cursor-pointer">
-                        Editor
-                      </TabsTrigger>
-                    </TabsList>
-
-                    {tab === "editor" && <ChatHeader />}
-                  </div>
-                </div>
-              </div>
-
-              {/* Messages */}
-              <div className="flex-1 flex flex-col min-h-0 overflow-scroll">
-                {selectedConversation ? (
-                  <>
-                    <TabsContent value="settings" className="m-0">
-                      {/* <MailList items={mails} /> */}
-                      <MenuForm id={selectedConversation} />
-                    </TabsContent>
-                    <TabsContent value="editor" className="m-0">
-                      {/* <MailList items={mails.filter((item) => !item.read)} /> */}
-                      <MenuEditor id={selectedConversation} />
-                    </TabsContent>
-                  </>
-                ) : (
-                  <div className="flex-1 flex items-center justify-center">
-                    <div className="text-center">
-                      <h3 className="text-lg font-semibold mb-2">
-                        Welcome to Chat
-                      </h3>
-                      <p className="text-muted-foreground">
-                        Select a conversation to start messaging
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </Tabs>
-        </CraftEditor>
       </div>
     </TooltipProvider>
   )

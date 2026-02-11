@@ -51,8 +51,8 @@ const data = {
           icon: BookOpenText,
         },
         {
-          title: "Editor",
-          url: "/editor",
+          title: "Code",
+          url: "/code",
           icon: Code,
         },
         {
