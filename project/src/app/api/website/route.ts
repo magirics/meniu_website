@@ -13,11 +13,11 @@ const TableName = "Website"
 export const GET = withAuth(
   withDatabase(async (request, context) => {
     const database = context.database as DynamoDBClient
-    const { id } = context.auth
+    const { shopId } = context.auth
 
     const command = new GetItemCommand({
       TableName,
-      Key: marshall({ id }),
+      Key: marshall({ shopId }),
     })
     const output = await database.send(command)
     if (!output.Item) {
@@ -36,9 +36,9 @@ export const PUT = withAuth(
 
     const { item: itemValue } = await request.json()
 
-    const { id } = auth
+    const { shopId } = auth
     const now = new Date().toISOString()
-    const item = { ...itemValue, id, updatedAt: now }
+    const item = { ...itemValue, shopId, updatedAt: now }
 
     const Item = marshall(item)
     const command = new PutItemCommand({ TableName, Item })

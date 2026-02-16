@@ -5,18 +5,18 @@ import { withDatabase } from "@/middlewares/withDatabase"
 import { AdminCreateUserCommand } from "@aws-sdk/client-cognito-identity-provider"
 import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb"
 import { marshall } from "@aws-sdk/util-dynamodb"
-import { v4 as uuidv4 } from "uuid"
 import plans from "@/app/plans.json"
 import { NextResponse } from "next/server"
+import { generateId, generateURL } from "@/lib/id"
 
 // FIX: make it dev only
 export const POST = withDatabase(async (request, context) => {
   const database = context.database as DynamoDBClient
 
-  const { store, owner, email } = await request.json()
-  let shopId = uuidv4()
-  let ownerId = null
-  let customerId = null
+  const { shop, owner, email } = await request.json()
+  let shopId = null
+  let cognitoId = null
+  let stripeId = null
 
   // Create cognito user
   {
@@ -26,9 +26,10 @@ export const POST = withDatabase(async (request, context) => {
     })
 
     const response = await cognito.send(command)
-    ownerId = response.User?.Attributes?.find(
+    cognitoId = response.User?.Attributes?.find(
       (attribute) => attribute.Name === "sub"
     )?.Value
+    shopId = cognitoId
   }
 
   // Create stripe customer
@@ -39,7 +40,7 @@ export const POST = withDatabase(async (request, context) => {
       metadata: { shopId },
     })
 
-    customerId = customer.id
+    stripeId = customer.id
   }
 
   /* Initialize database values */
@@ -47,11 +48,12 @@ export const POST = withDatabase(async (request, context) => {
 
   // Shop
   {
-    const shop = {
-      id: ownerId,
-      name: store,
+    const item = {
+      shopId,
+      name: shop,
+      createdAt: now,
+      updatedAt: now,
     }
-    const item = { ...shop, createdAt: now, updatedAt: now }
 
     const Item = marshall(item)
     const command = new PutItemCommand({ TableName: "Shop", Item })
@@ -71,9 +73,10 @@ export const POST = withDatabase(async (request, context) => {
     }
     const stripe = {
       // subscriptionId: "",
+      // invoiceId: "",
     }
     const billing = {
-      id: ownerId,
+      shopId,
       history: [{ plan, stripe }],
     }
     const item = { ...billing, createdAt: now, updatedAt: now }
@@ -86,12 +89,13 @@ export const POST = withDatabase(async (request, context) => {
   // User
   {
     const user = {
-      id: ownerId,
+      shopId,
+      id: cognitoId,
       name: owner,
       email,
       role: "owner",
       stripe: {
-        customerId,
+        customerId: stripeId,
       },
     }
     const item = { ...user, createdAt: now, updatedAt: now }
@@ -101,10 +105,40 @@ export const POST = withDatabase(async (request, context) => {
     await database.send(command)
   }
 
+  // Website
+  {
+    const url = generateURL()
+    const website = {
+      shopId,
+      url,
+      freeUrl: url,
+      title: shop,
+      description: "Check out our menu and find your next favorite dish today!",
+      keywords: "menu, restaurant, food, dishes, online ordering",
+      scheduled: [],
+    }
+    const item = { ...website, createdAt: now, updatedAt: now }
+
+    const Item = marshall(item)
+    const command = new PutItemCommand({ TableName: "Website", Item })
+    await database.send(command)
+  }
+
+  // Menu
+  {
+    const menu = {
+      shopId,
+      id: generateId(),
+      name: "First menu",
+      description: "My first menu",
+      files: [],
+    }
+    const item = { ...menu, createdAt: now, updatedAt: now }
+
+    const Item = marshall(item)
+    const command = new PutItemCommand({ TableName: "Menu", Item })
+    await database.send(command)
+  }
+
   return NextResponse.json(null, { status: 200 })
 })
-
-
-// const { customAlphabet } = require("nanoid")
-// const alphabet = "0123456789abcdefghijklmnopqrstuvwxyz"
-// const nanoid = customAlphabet(alphabet, 21)

@@ -15,7 +15,6 @@ import {
   PutItemCommand,
 } from "@aws-sdk/client-dynamodb"
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb"
-import { v4 as uuidv4 } from "uuid"
 
 function generateKey(shopId: string, filename: string) {
   const hash = crypto.createHash("sha256")
@@ -29,7 +28,7 @@ function generateKey(shopId: string, filename: string) {
 /* POST – get presigned URL for upload */
 export const POST = withAuth(
   withDatabase(async (request: NextRequest, context: any) => {
-    const { id: shopId } = context.auth
+    const { shopId } = context.auth
     const database = context.database as DynamoDBClient
     const { menu: id, filename, contentType } = await request.json()
 

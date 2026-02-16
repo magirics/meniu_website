@@ -1,4 +1,5 @@
 import { MenuValue } from "@/app/schemas/menu"
+import { generateId } from "@/lib/id"
 import { withAuth } from "@/middlewares/withAuth"
 import { withDatabase } from "@/middlewares/withDatabase"
 import {
@@ -10,27 +11,26 @@ import {
 } from "@aws-sdk/client-dynamodb"
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb"
 import { NextResponse } from "next/server"
-import { v4 as uuidv4 } from "uuid"
 
 const TableName = "Menu"
 
 export const GET = withAuth(
   withDatabase(async (request, context) => {
     const database = context.database as DynamoDBClient
+    const { shopId } = context.auth
     const { id } = await context.params
 
-    const command = await new ScanCommand({
+    const command = await new GetItemCommand({
       TableName,
-      FilterExpression: "id = :id",
-      ExpressionAttributeValues: marshall({ ":id": id }),
+      Key: marshall({ shopId, id }),
     })
 
     const output = await database.send(command)
-    if (!output.Items) {
+    if (!output.Item) {
       return NextResponse.json({ error: "Not Found" }, { status: 404 })
     }
 
-    const item = output.Items.map((item) => unmarshall(item))[0]
+    const item = unmarshall(output.Item)
     return NextResponse.json({ item })
   })
 )
@@ -38,7 +38,7 @@ export const GET = withAuth(
 export const PUT = withAuth(
   withDatabase(async (request, context) => {
     const database = context.database as DynamoDBClient
-    const { id: shopId } = context.auth
+    const { shopId } = context.auth
     const { id } = await context.params
     const { item: itemValue } = await request.json()
     const item = { ...itemValue, id }
@@ -53,36 +53,35 @@ export const PUT = withAuth(
   })
 )
 
-async function getMenu(id, context) {
+async function getMenu(shopId, id, context) {
   const database = context.database as DynamoDBClient
 
-  const command = await new ScanCommand({
-    TableName,
-    FilterExpression: "id = :id",
-    ExpressionAttributeValues: marshall({ ":id": id }),
-  })
+    const command = await new GetItemCommand({
+      TableName,
+      Key: marshall({ shopId, id }),
+    })
 
   const output = await database.send(command)
-  if (!output.Items) {
+  if (!output.Item) {
     return NextResponse.json({ error: "Not Found" }, { status: 404 })
   }
 
-  const item = output.Items.map((item) => unmarshall(item))[0]
+  const item = unmarshall(output.Item)
   return item
 }
 
 export const POST = withAuth(
   withDatabase(async (request, context) => {
     const database = context.database as DynamoDBClient
-    const { id: shopId } = context.auth
+    const { shopId } = context.auth
     const { id } = await context.params
 
-    const itemValue = await getMenu(id, context)
+    const itemValue = await getMenu(shopId, id, context)
     const item = {
       ...itemValue,
       name: itemValue.name + " copy",
       shopId,
-      id: uuidv4(),
+      id: generateId(),
     }
 
     const output = new PutItemCommand({

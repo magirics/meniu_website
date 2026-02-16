@@ -17,11 +17,10 @@ import {
   ScanCommand,
 } from "@aws-sdk/client-dynamodb"
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb"
-import { v4 as uuidv4 } from "uuid"
 
 export const DELETE = withAuth(
   withDatabase(async (req: Request, context) => {
-    const { id: shopId } = context.auth
+    const { shopId } = context.auth
     const { id } = await req.json()
     const database = context.database as DynamoDBClient
 
@@ -48,9 +47,9 @@ export const DELETE = withAuth(
     }
     {
       const now = new Date().toISOString()
-      console.log('menu.files = ', menu.files)
+      // console.log('menu.files = ', menu.files)
       const files = menu.files.filter((file) => file.key != key)
-      console.log('files = ', files)
+      // console.log('files = ', files)
       const item = { ...menu, files, updatedAt: now }
 
       const Item = marshall(item)

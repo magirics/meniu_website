@@ -1,50 +1,41 @@
 "use client"
 
-import { Editor as CraftEditor, Element, Frame } from "@craftjs/core"
-import ToolBar from "./craft/ToolBar"
-import {
-  CategoryBlock,
-  MainBlock,
-  ProductBlock,
-  TitleBlock,
-} from "./craft/SelectionTools"
-import React, { useEffect, useState } from "react"
-import * as Babel from "@babel/standalone"
+import { Frame } from "@craftjs/core"
+import MonacoEditor from "@monaco-editor/react"
 
 export default function MenuEditor({ id, core, menu }) {
+  if (!core) return null
+
   const files = menu?.files || []
-  console.log("files = ", files)
+  const { Layout } = core
 
   return (
-    <div className="h-full">
-      {files.map((file) => {
-        if (file.name.endsWith(".css"))
-          return <style key={file.url} href={file.url}></style>
-        else if (file.name.endsWith(".js"))
-          return <script key={file.url} src={file.url}></script>
-        else if (file.name.endsWith(".png"))
-          return <img key={file.url} src={file.url}></img>
-      })}
-      <Frame>
-        <core.Layout></core.Layout>
-      </Frame>
-    </div>
+    <>
+      <div className="h-full">
+        {files.map((file) => {
+          if (file.name.endsWith(".css"))
+            return <style key={file.url} href={file.url}></style>
+          else if (file.name.endsWith(".js"))
+            return <script key={file.url} src={file.url}></script>
+          else if (file.name.endsWith(".png"))
+            return <img key={file.url} src={file.url}></img>
+        })}
+        <Frame>
+          {/* <Element is={Layout} canvas></Element> */}
+          <Layout></Layout>
+        </Frame>
+      </div>
+      <div className="min-w-40">
+        <MonacoEditor
+          defaultLanguage="css"
+          value={"Text to edit"}
+          // onChange={(value) => setCss(value)}
+          theme="vs-dark"
+          options={{
+            minimap: { enabled: false },
+          }}
+        />
+      </div>
+    </>
   )
 }
-
-/* <Element id="root" is="div" canvas>
-</Element> */
-// className={styles.editor}
-// className={styles.craftEditor}
-
-/* <div className={styles.monacoEditor}>
-          <MonacoEditor
-            defaultLanguage="css"
-            value={css}
-            onChange={(value) => setCss(value)}
-            theme="vs-dark"
-            options={{
-              minimap: { enabled: false },
-            }}
-          />
-        </div> */

@@ -97,7 +97,7 @@ export default function ToolBar({ value, css, id }) {
       body: JSON.stringify({
         menu: id,
         filename: file.name,
-        contentType: file.type,
+        contentType: file.type || 'text/plain',
       }),
     })
     const { url } = await res.json()

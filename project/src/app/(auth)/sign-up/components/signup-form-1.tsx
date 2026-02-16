@@ -33,7 +33,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 
 const signupFormSchema = z.object({
-  store: z.string().min(1, "Full name is required"),
+  shop: z.string().min(1, "Full name is required"),
   owner: z.string().min(1, "Full name is required"),
   email: z.string().email("Invalid email address"),
   terms: z
@@ -54,7 +54,7 @@ export function SignupForm1({
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupFormSchema),
     defaultValues: {
-      store: "",
+      shop: "",
       owner: "",
       email: "",
       terms: false,
@@ -64,7 +64,7 @@ export function SignupForm1({
   const router = useRouter()
   const [submitting, setSubmitting] = useState(false)
 
-  const onSubmit = async ({ store, owner, email }: SignupFormValues) => {
+  const onSubmit = async ({ shop, owner, email }: SignupFormValues) => {
     setSubmitting(false)
     try {
       const respose = await fetch("/api/sign-up", {
@@ -72,7 +72,7 @@ export function SignupForm1({
         headers: {
           "content-type": "application/json",
         },
-        body: JSON.stringify({ store, owner, email }),
+        body: JSON.stringify({ shop, owner, email }),
       })
       router.push(`/confirm-password?email=${email}`)
     } catch (err: any) {
@@ -98,12 +98,12 @@ export function SignupForm1({
                 <div className="grid gap-4">
                   <FormField
                     control={form.control}
-                    name="store"
+                    name="shop"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Store</FormLabel>
+                        <FormLabel>Shop</FormLabel>
                         <FormControl>
-                          <Input placeholder="Chimichangas" {...field} />
+                          <Input placeholder="Chimi Changas" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -168,7 +168,7 @@ export function SignupForm1({
                 <div className="text-center text-sm">
                   Already have an account?{" "}
                   <a
-                    href="/auth/sign-in"
+                    href="/sign-in"
                     className="underline underline-offset-4"
                   >
                     Sign in

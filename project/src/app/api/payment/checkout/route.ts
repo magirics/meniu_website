@@ -5,38 +5,37 @@ import { marshall, unmarshall } from "@aws-sdk/util-dynamodb"
 import { GetItemCommand, PutItemCommand } from "@aws-sdk/client-dynamodb"
 import { NextResponse } from "next/server"
 import { withDatabase } from "@/middlewares/withDatabase"
+import env from "@/lib/env"
 
-async function getBilling(id, context) {
+async function getBilling(shopId, context) {
   const { database } = context
 
-  const key = { id }
+  const key = { shopId }
   const command = new GetItemCommand({
     TableName: "Billing",
     Key: marshall(key),
   })
   const output = await database.send(command)
   if (!output.Item) {
-    return NextResponse.json({ error: "Not Found" }, { status: 404 })
+    throw Error("Billing id not found")
   }
 
   const billing = unmarshall(output.Item)
   return billing
 }
 
-async function changePlan(billing, planId, context) {
+async function saveFreePlan(selectedPlan, billing, context) {
   const { database } = context
-
-  const currenPlan = plans.find((plan) => plan.id === planId)!
 
   const now = new Date().toISOString()
   const plan = {
-    id: currenPlan.id,
-    name: currenPlan.name,
-    description: currenPlan.description,
-    price: currenPlan.price,
-    frequency: currenPlan.frequency,
+    id: selectedPlan.id,
+    name: selectedPlan.name,
+    description: selectedPlan.description,
+    price: selectedPlan.price,
+    frequency: selectedPlan.frequency,
     period: {
-      start: new Date().toISOString(),
+      start: now,
     },
   }
   const stripe = {}
@@ -52,17 +51,17 @@ async function changePlan(billing, planId, context) {
   await database.send(command)
 }
 
-async function getUser(id, context) {
+async function getOwner(id, context) {
   const { database } = context
 
-  const key = { id }
+  const key = { shopId: id, id }
   const command = new GetItemCommand({
     TableName: "User",
     Key: marshall(key),
   })
   const output = await database.send(command)
   if (!output.Item) {
-    return NextResponse.json({ error: "Not Found" }, { status: 404 })
+    throw Error("Owner id not found")
   }
 
   const user = unmarshall(output.Item)
@@ -72,43 +71,93 @@ async function getUser(id, context) {
 export const POST = withAuth(
   withDatabase(async function (request, context) {
     const { planId } = await request.json()
-    const userId = context.auth.id
+    const { shopId } = context.auth
 
-    const billing = await getBilling(userId, context)
-    const subscriptionId = billing.history[0].stripe.subscriptionId
-    if (planId === "free" && subscriptionId) {
-      await stripe.subscriptions.cancel(subscriptionId)
-      await changePlan(billing, planId, context)
-      return NextResponse.json(null, { status: 200 })
-    }
-
+    const selectedPlan = plans.find((tier) => tier.id === planId)!
     const host = request.headers.get("host")
+    const owner = await getOwner(shopId, context)
+    const protocol = env.NODE_ENV === "development" ? "http" : "https"
+
+    const billing = await getBilling(shopId, context)
+    const subscriptionId = billing.history[0].stripe.subscriptionId
+
+    const isCurrentFree = !subscriptionId
+    const isSelectedFree = planId === "free"
+
+    /* 
+    paid -> free
+    free -> paid
+    paid -> paid
+    */
+
     try {
-      const line_items = [
-        {
-          price: plans.find((tier) => tier.id === planId).stripe.priceId,
-          quantity: 1,
-        },
-      ]
+      if (!isCurrentFree && isSelectedFree) {
+        console.log("paid -> free")
+        await stripe.subscriptions.cancel(subscriptionId)
+        await saveFreePlan(selectedPlan, billing, context)
+        return NextResponse.json(null, { status: 200 })
+      }
 
-      const user = await getUser(userId, context)
-      const session = await stripe.checkout.sessions.create({
-        customer: user.stripe.customerId,
-        payment_method_types: ["card"],
-        line_items,
-        mode: "subscription",
-        success_url: `http://${host}/website`,
-        cancel_url: `http://${host}/billing`,
-        metadata: {
-          userId,
-          planId,
-        },
-      })
+      if (isCurrentFree && !isSelectedFree) {
+        console.log("free -> paid")
+        const session = await createCheckoutSession(
+          selectedPlan,
+          owner,
+          protocol,
+          host,
+          shopId,
+          planId
+        )
+        return Response.json({ session }, { status: 200 })
+      }
 
-      return Response.json({ session }, { status: 200 })
+      if (!isCurrentFree && !isSelectedFree) {
+        console.log("paid -> paid")
+        await stripe.subscriptions.cancel(subscriptionId)
+        const session = await createCheckoutSession(
+          selectedPlan,
+          owner,
+          protocol,
+          host,
+          shopId,
+          planId
+        )
+        return Response.json({ session }, { status: 200 })
+      }
     } catch (error: any) {
       console.error(error)
       return Response.json({ error: error.message }, { status: 400 })
     }
   })
 )
+
+async function createCheckoutSession(
+  selectedPlan,
+  owner,
+  protocol,
+  host,
+  shopId,
+  planId
+) {
+  const line_items = [
+    {
+      price: selectedPlan.stripe.priceId,
+      quantity: 1,
+    },
+  ]
+
+  const session = await stripe.checkout.sessions.create({
+    customer: owner.stripe.customerId,
+    payment_method_types: ["card"],
+    line_items,
+    mode: "subscription",
+    success_url: `${protocol}://${host}/billing`,
+    cancel_url: `${protocol}://${host}/billing`,
+    metadata: {
+      shopId,
+      planId,
+    },
+  })
+
+  return session
+}

@@ -28,6 +28,7 @@ import MenuForm from "./menu-form"
 import MenuEditor from "./menu-editor"
 import { ChatHeaderFiles } from "./chat-header-files"
 import * as Babel from "@babel/standalone"
+import { useRouter } from "next/navigation"
 
 interface ChatProps {
   conversations: Conversation[]
@@ -69,6 +70,9 @@ export function Chat({ conversations, messages, users, menus }: ChatProps) {
     }
   }, [])
 
+  const router = useRouter()
+  router.push(`/code/${menus[0].id}`)
+
   // Initialize data
   useEffect(() => {
     setConversations(conversations)
@@ -82,10 +86,13 @@ export function Chat({ conversations, messages, users, menus }: ChatProps) {
     )
 
     // Auto-select first conversation if none selected
-    if (!selectedConversation && conversations.length > 0) {
-      setSelectedConversation(menus[1].id)
+    if (!selectedConversation && menus.length > 0) {
+      setSelectedConversation(menus[0].id)
+      
+      
     }
   }, [
+    menus,
     conversations,
     messages,
     users,

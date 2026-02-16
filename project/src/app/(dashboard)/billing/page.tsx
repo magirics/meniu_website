@@ -32,9 +32,9 @@ export default function BillingSettings() {
 
     const data = await response.json()
     if (id === "free") {
-      router.refresh()
+      location.reload()
     } else {
-      router.push(data.session.url)
+      location.href = data.session.url
     }
   }
 

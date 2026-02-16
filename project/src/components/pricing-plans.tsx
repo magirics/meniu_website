@@ -87,8 +87,6 @@ export function PricingPlans({
     return mode === "billing" && currentPlanId === plan.id
   }
 
-  console.log(currentPlanId)
-
   return (
     <div className="grid gap-8 lg:grid-cols-3">
       {plans.map((tier) => (

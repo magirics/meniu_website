@@ -33,7 +33,9 @@ export function withAuth(next) {
     try {
       const payload = await verifyJWT(token)
       auth = {
-        id: payload.sub,
+        userId: payload.sub,
+        shopId: payload.sub,
+        getUser: async () => {},
       }
     } catch (e) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })

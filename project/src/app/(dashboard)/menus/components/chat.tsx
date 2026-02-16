@@ -26,6 +26,7 @@ import {
 } from "../use-chat"
 import MenuForm from "./menu-form"
 import MenuEditor from "./menu-editor"
+import { useRouter } from "next/navigation"
 
 interface ChatProps {
   conversations: Conversation[]
@@ -67,6 +68,9 @@ export function Chat({ conversations, messages, users, menus }: ChatProps) {
     }
   }, [])
 
+  const router = useRouter()
+  router.push(`/menus/${menus[0].id}`)
+
   // Initialize data
   useEffect(() => {
     setConversations(conversations)
@@ -82,6 +86,7 @@ export function Chat({ conversations, messages, users, menus }: ChatProps) {
     // Auto-select first conversation if none selected
     if (!selectedConversation && conversations.length > 0) {
       setSelectedConversation(menus[0].id)
+      
     }
   }, [
     conversations,

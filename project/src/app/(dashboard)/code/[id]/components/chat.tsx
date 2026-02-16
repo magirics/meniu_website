@@ -2,17 +2,10 @@
 
 import React, { useEffect, useState } from "react"
 import { Menu, X } from "lucide-react"
-import {
-  CategoryBlock,
-  MainBlock,
-  ProductBlock,
-  TitleBlock,
-} from "./craft/SelectionTools"
-import { Editor as CraftEditor, Element, Frame } from "@craftjs/core"
 
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+
 import { ConversationList } from "./conversation-list"
 import { ChatHeader } from "./chat-header"
 import { MessageList } from "./message-list"
@@ -28,6 +21,7 @@ import MenuForm from "./menu-form"
 import MenuEditor from "./menu-editor"
 import { ChatHeaderFiles } from "./chat-header-files"
 import * as Babel from "@babel/standalone"
+import dynamic from "next/dynamic"
 
 interface ChatProps {
   conversations: Conversation[]
@@ -39,13 +33,8 @@ interface ChatProps {
 export function Chat({ id, conversations, messages, users, menus }: ChatProps) {
   const selectedConversation = id
 
-  const {
-    setConversations,
-    setMessages,
-    setUsers,
-    addMessage,
-    toggleMute,
-  } = useChat()
+  const { setConversations, setMessages, setUsers, addMessage, toggleMute } =
+    useChat()
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
@@ -80,7 +69,6 @@ export function Chat({ id, conversations, messages, users, menus }: ChatProps) {
         setMessages(conversationId, conversationMessages)
       }
     )
-
   }, [
     conversations,
     messages,
@@ -91,16 +79,25 @@ export function Chat({ id, conversations, messages, users, menus }: ChatProps) {
     setUsers,
   ])
 
-  const [tab, setTab] = useState("files")
+  const [menu, setMenu] = useState(null)
+  async function getMenu() {
+    const response = await fetch(`/api/menus/${selectedConversation}`)
+    const { item } = await response.json()
+    setMenu(item)
+    return item
+  }
 
   const [core, setCore] = useState(null)
-  async function getCore() {
-    const response = await fetch("/test/data-main.tsx")
-    const page_jsx = await response.text()
+  async function getCore(menu) {
+    const coreFile = menu.files.find((file) => file.name === "core.tsx")
+    if (!coreFile) return
+
+    const response = await fetch(coreFile.url)
+    const page_tsx = await response.text()
 
     // const main = eval(page_jsx)
 
-    const page_js = Babel.transform(page_jsx, { presets: ["react"] }).code
+    const page_js = Babel.transform(page_tsx, { presets: ["react"] }).code
     const main = eval(
       `async (React) => { ${page_js} return { icons, components, Layout } }`
     )
@@ -109,21 +106,16 @@ export function Chat({ id, conversations, messages, users, menus }: ChatProps) {
     setCore(core)
   }
 
-  const [menu, setMenu] = useState(null)
-  async function getMenu() {
-    const response = await fetch(`/api/menus/${selectedConversation}`)
-    const { item } = await response.json()
-    setMenu(item)
-  }
-
   async function getStuff() {
-    await getCore()
-    await getMenu()
+    const menu = await getMenu()
+    await getCore(menu)
   }
 
   useEffect(() => {
     getStuff()
-  }, [selectedConversation])
+  }, [])
+
+  const MyComponent = dynamic(() => import("./tabs-section"), { ssr: false })
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -171,89 +163,12 @@ export function Chat({ id, conversations, messages, users, menus }: ChatProps) {
         </div>
 
         {core && (
-          <CraftEditor
-            key={selectedConversation}
-            resolver={{
-              Layout: core.Layout,
-              TitleBlock,
-              MainBlock,
-              CategoryBlock,
-              ProductBlock,
-            }}
-          >
-            <Tabs
-              value={tab}
-              onValueChange={setTab}
-              className="grow overflow-hidden"
-            >
-              {/* Chat Panel - Flexible Width */}
-              <div className="flex-1 flex flex-col min-w-0 bg-background h-full">
-                {/* Chat Header with Hamburger Menu */}
-                <div className="flex items-center h-16 px-4 border-b bg-background">
-                  {/* Hamburger Menu Button - Only visible when sidebar is hidden on mobile */}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsSidebarOpen(true)}
-                    className="cursor-pointer lg:hidden mr-2"
-                  >
-                    <Menu className="h-4 w-4" />
-                  </Button>
-
-                  <div className="flex-1">
-                    <div className="flex items-center px-4 py-1.5 justify-between">
-                      <TabsList>
-                        <TabsTrigger value="files" className="cursor-pointer">
-                          Files
-                        </TabsTrigger>
-                        <TabsTrigger value="editor" className="cursor-pointer">
-                          Editor
-                        </TabsTrigger>
-                      </TabsList>
-
-                      {tab === "files" && (
-                        <ChatHeaderFiles id={selectedConversation} />
-                      )}
-                      {tab === "editor" && (
-                        <ChatHeader id={selectedConversation} />
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Messages */}
-                <div className="flex-1 flex flex-col min-h-0 overflow-scroll">
-                  {selectedConversation ? (
-                    <>
-                      <TabsContent value="files" className="m-0">
-                        {/* <MailList items={mails} /> */}
-                        <MenuForm id={selectedConversation} />
-                      </TabsContent>
-                      <TabsContent value="editor" className="m-0">
-                        <MenuEditor
-                          id={selectedConversation}
-                          core={core}
-                          menu={menu}
-                        />
-                        {/* <MailList items={mails.filter((item) => !item.read)} /> */}
-                      </TabsContent>
-                    </>
-                  ) : (
-                    <div className="flex-1 flex items-center justify-center">
-                      <div className="text-center">
-                        <h3 className="text-lg font-semibold mb-2">
-                          Welcome to Chat
-                        </h3>
-                        <p className="text-muted-foreground">
-                          Select a conversation to start messaging
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </Tabs>
-          </CraftEditor>
+          <MyComponent
+            core={core}
+            menu={menu}
+            selectedConversation={selectedConversation}
+            setIsSidebarOpen={setIsSidebarOpen}
+          ></MyComponent>
         )}
       </div>
     </TooltipProvider>

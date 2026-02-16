@@ -1,3 +1,4 @@
+import { generateId } from "@/lib/id"
 import { withAuth } from "@/middlewares/withAuth"
 import { withDatabase } from "@/middlewares/withDatabase"
 import {
@@ -8,19 +9,18 @@ import {
 } from "@aws-sdk/client-dynamodb"
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb"
 import { NextResponse } from "next/server"
-import { v4 as uuidv4 } from "uuid"
 
 const TableName = "Menu"
 
 export const GET = withAuth(
   withDatabase(async (request, context) => {
     const database = context.database as DynamoDBClient
-    const { id } = context.auth
+    const { shopId } = context.auth
 
     const command = await new ScanCommand({
       TableName,
       FilterExpression: "shopId = :shopId",
-      ExpressionAttributeValues: marshall({ ":shopId": id }),
+      ExpressionAttributeValues: marshall({ ":shopId": shopId }),
     })
 
     const output = await database.send(command)
@@ -36,11 +36,10 @@ export const GET = withAuth(
 export const POST = withAuth(
   withDatabase(async (request, context) => {
     const database = context.database as DynamoDBClient
-    const auth = context.auth
+    const { shopId } = context.auth
 
     const { item: itemValue } = await request.json()
-    const shopId = auth.id
-    const id = uuidv4()
+    const id = generateId()
     const now = new Date().toISOString()
     const item = { ...itemValue, shopId, id, createdAt: now, updatedAt: now }
 

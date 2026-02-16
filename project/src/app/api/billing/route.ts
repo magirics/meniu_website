@@ -1,18 +1,15 @@
 import { withAuth } from "@/middlewares/withAuth"
 import { withDatabase } from "@/middlewares/withDatabase"
-import {
-  DynamoDBClient,
-  GetItemCommand,
-} from "@aws-sdk/client-dynamodb"
+import { DynamoDBClient, GetItemCommand } from "@aws-sdk/client-dynamodb"
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb"
 import { NextResponse } from "next/server"
 
 export const GET = withAuth(
   withDatabase(async function (request, context) {
     const database = context.database as DynamoDBClient
-    const auth = context.auth
+    const { shopId } = context.auth
 
-    const key = { id: auth.id }
+    const key = { shopId }
     const command = new GetItemCommand({
       TableName: "Billing",
       Key: marshall(key),
