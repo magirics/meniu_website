@@ -142,13 +142,13 @@ export default function MenuForm({ id }) {
   }, [id])
 
   const onDelete = async (file) => {
-    const key = encodeURIComponent(file.key)
-    const response = await fetch(`/api/files/${key}`, {
+    // const key = encodeURIComponent(file.key)
+    const response = await fetch(`/api/files/${id}`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ id }),
+      body: JSON.stringify({ key: file.key }),
     })
     console.log(response)
     alert(`${file.name} deleted!`)
@@ -168,45 +168,6 @@ export default function MenuForm({ id }) {
           </span>
         </div>
       ))}
-
-      {/* {files.images.map((file) => (
-        <div className="inline-block">
-          <FileImage className="h-8 w-8 stroke-1 m-auto" />
-          {file.name}
-        </div>
-      ))}
-
-      {files.scripts.map((file) => (
-        <div className="inline-block">
-          <FileCode className="h-8 w-8 stroke-1 m-auto" />
-          {file.name}
-        </div>
-      ))} */}
-
-      {/* <Card>
-        <CardContent>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-muted-foreground text-sm font-medium">
-                Total Tasks
-              </p>
-              <div className="mt-1 flex items-baseline gap-2">
-                <span className="text-2xl font-bold">{stats.total}</span>
-                <span className="flex items-center gap-0.5 text-sm text-green-500">
-                  <ArrowUp className="size-3.5" />
-                  {stats.total > 0
-                    ? Math.round((stats.completed / stats.total) * 100)
-                    : 0}
-                  %
-                </span>
-              </div>
-            </div>
-            <div className="bg-secondary rounded-lg p-3">
-              <ListTodo className="size-6" />
-            </div>
-          </div>
-        </CardContent>
-      </Card> */}
     </div>
   )
 }

@@ -6,7 +6,9 @@ import Category from "./Category"
 import Product from "./Product"
 import Title from "./Title"
 import Main from "./Main"
-import ProductsDialog from "../site/ProductsDialog"
+import Text from "./Text"
+import Image from "./Image"
+import Container from "./Container"
 
 export default function SelectionTools({ ref, component, buttons }) {
   const { id } = useNode()
@@ -26,7 +28,11 @@ export default function SelectionTools({ ref, component, buttons }) {
   }
 
   return (
-    <div ref={ref} className={styles.root} style={{ border: isSelected ? "2px dashed black" : "" }}>
+    <div
+      ref={ref}
+      className={styles.root}
+      style={{ border: isSelected ? "2px dashed black" : "" }}
+    >
       {isSelected && (
         <div className={styles.tools}>
           <Button icon={Trash} onClick={onDelete}>
@@ -46,6 +52,59 @@ function setField(actions, field, value) {
   })
 }
 
+export function TextBlock({ value }) {
+  const { actions, connectors } = useNode()
+  const { connect, drag } = connectors
+
+  const ref = (ref) => {
+    connect(drag(ref))
+  }
+
+  const onChange = (value) => setField(actions, "value", value)
+
+  return (
+    <SelectionTools
+      ref={ref}
+      component={<Text value={value} onChange={onChange}></Text>}
+    />
+  )
+}
+
+export function ImageBlock({ value }) {
+  const { actions, connectors } = useNode()
+  const { connect, drag } = connectors
+
+  const ref = (ref) => {
+    connect(drag(ref))
+  }
+
+  const onChange = (value) => setField(actions, "value", value)
+
+  return (
+    <SelectionTools
+      ref={ref}
+      component={<Image value={value} onChange={onChange}></Image>}
+    />
+  )
+}
+
+export function ContainerBlock({ value }) {
+  const { actions, connectors } = useNode()
+  const { connect, drag } = connectors
+
+  const ref = (ref) => {
+    connect(drag(ref))
+  }
+
+  return (
+    <SelectionTools
+      ref={ref}
+      // component={<Container></Container>}
+      component={<Element is={Container} canvas />}
+    />
+  )
+}
+
 export function CategoryBlock({ value }) {
   const { actions, connectors } = useNode()
   const { connect, drag } = connectors
@@ -57,7 +116,10 @@ export function CategoryBlock({ value }) {
   const onChange = (value) => setField(actions, "value", value)
 
   return (
-    <SelectionTools ref={ref} component={<Category value={value} onChange={onChange}></Category>} />
+    <SelectionTools
+      ref={ref}
+      component={<Category value={value} onChange={onChange}></Category>}
+    />
   )
 }
 
@@ -74,7 +136,9 @@ export function ProductBlock({ value }) {
   return (
     <SelectionTools
       ref={ref}
-      component={<Product value={value} onChange={onChange} disabled={value.id} />}
+      component={
+        <Product value={value} onChange={onChange} disabled={value.id} />
+      }
       // buttons={[<ProductsDialog key="ProductsDialog" />]}
       buttons={[]}
     />
@@ -93,7 +157,12 @@ export function TitleBlock({ value }) {
     setField(actions, "value", value)
   }
 
-  return <SelectionTools ref={ref} component={<Title value={value} onChange={onChange} />} />
+  return (
+    <SelectionTools
+      ref={ref}
+      component={<Title value={value} onChange={onChange} />}
+    />
+  )
 }
 
 export function MainBlock() {
@@ -105,6 +174,12 @@ export function MainBlock() {
   }
 
   return <SelectionTools ref={ref} component={<Main></Main>} />
+}
+
+TitleBlock.craft = {
+  props: {
+    value: "Title",
+  },
 }
 
 CategoryBlock.craft = {
@@ -130,9 +205,17 @@ ProductBlock.craft = {
   },
 }
 
-TitleBlock.craft = {
+ContainerBlock.craft = {}
+
+ImageBlock.craft = {
   props: {
-    value: "Title",
+    href: "img",
+  },
+}
+
+TextBlock.craft = {
+  props: {
+    value: "Text",
   },
 }
 

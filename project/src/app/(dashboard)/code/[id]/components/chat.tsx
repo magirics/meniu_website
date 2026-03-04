@@ -1,15 +1,12 @@
 "use client"
 
 import React, { useEffect, useState } from "react"
-import { Menu, X } from "lucide-react"
+import { X } from "lucide-react"
 
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { Button } from "@/components/ui/button"
 
 import { ConversationList } from "./conversation-list"
-import { ChatHeader } from "./chat-header"
-import { MessageList } from "./message-list"
-import { MessageInput } from "./message-input"
 import {
   useChat,
   type Conversation,
@@ -17,11 +14,15 @@ import {
   type User,
   type Menu,
 } from "../use-chat"
-import MenuForm from "./menu-form"
-import MenuEditor from "./menu-editor"
-import { ChatHeaderFiles } from "./chat-header-files"
 import * as Babel from "@babel/standalone"
 import dynamic from "next/dynamic"
+import {
+  ContainerBlock,
+  ImageBlock,
+  ProductBlock,
+  TextBlock,
+} from "./craft/SelectionTools"
+import * as craft from "@craftjs/core"
 
 interface ChatProps {
   conversations: Conversation[]
@@ -87,35 +88,51 @@ export function Chat({ id, conversations, messages, users, menus }: ChatProps) {
     return item
   }
 
+  const [loading, setLoading] = useState(true)
   const [core, setCore] = useState(null)
+
   async function getCore(menu) {
-    const coreFile = menu.files.find((file) => file.name === "core.tsx")
-    if (!coreFile) return
-
-    const response = await fetch(coreFile.url)
-    const page_tsx = await response.text()
-
-    // const main = eval(page_jsx)
-
+    const page_tsx = menu.layout
     const page_js = Babel.transform(page_tsx, { presets: ["react"] }).code
     const main = eval(
-      `async (React) => { ${page_js} return { icons, components, Layout } }`
+      `async (React, craft, components, files) => { ${page_js} return { Layout } }`
     )
 
-    const core = await main(React)
+    const components = {
+      TextBlock,
+      ImageBlock,
+      ContainerBlock,
+      ProductBlock,
+    }
+    const core = await main(React, craft, components, menu.files)
     setCore(core)
   }
 
   async function getStuff() {
     const menu = await getMenu()
     await getCore(menu)
+    setLoading(false)
   }
 
   useEffect(() => {
     getStuff()
   }, [])
 
-  const MyComponent = dynamic(() => import("./tabs-section"), { ssr: false })
+  const FilesMenuTabs = dynamic(() => import("./files-menu-tabs"), {
+    ssr: false,
+  })
+
+  let tabSection = null
+  if (core) {
+    tabSection = (
+      <FilesMenuTabs
+        core={core}
+        menu={menu}
+        selectedConversation={selectedConversation}
+        setIsSidebarOpen={setIsSidebarOpen}
+      ></FilesMenuTabs>
+    )
+  }
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -162,14 +179,7 @@ export function Chat({ id, conversations, messages, users, menus }: ChatProps) {
           />
         </div>
 
-        {core && (
-          <MyComponent
-            core={core}
-            menu={menu}
-            selectedConversation={selectedConversation}
-            setIsSidebarOpen={setIsSidebarOpen}
-          ></MyComponent>
-        )}
+        {loading ? "Loading" : tabSection}
       </div>
     </TooltipProvider>
   )

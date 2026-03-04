@@ -21,10 +21,9 @@ import { marshall, unmarshall } from "@aws-sdk/util-dynamodb"
 export const DELETE = withAuth(
   withDatabase(async (req: Request, context) => {
     const { shopId } = context.auth
-    const { id } = await req.json()
+    const { id } = await context.params
+    const { key } = await req.json()
     const database = context.database as DynamoDBClient
-
-    const { key } = await context.params
 
     if (!key)
       return NextResponse.json({ error: "Missing key" }, { status: 400 })
@@ -73,6 +72,13 @@ export const DELETE = withAuth(
       const files = menus.map((menu) => menu.files).flat()
       const file = files.find((file) => file.key === key)
 
+      if (!file) {
+        console.log("Error while deleting the file")
+
+        console.log("shopId =", shopId)
+        console.log("id =", id)
+        console.log("key =", key)
+      }
       if (!file) {
         await s3.send(
           new DeleteObjectCommand({

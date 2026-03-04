@@ -70,8 +70,7 @@ export function Chat({ conversations, messages, users, menus }: ChatProps) {
     }
   }, [])
 
-  const router = useRouter()
-  router.push(`/code/${menus[0].id}`)
+  window.location.replace(`/code/${menus[0].id}`)
 
   // Initialize data
   useEffect(() => {

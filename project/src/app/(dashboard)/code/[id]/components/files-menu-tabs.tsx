@@ -1,12 +1,12 @@
 "use client"
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Editor as CraftEditor, Element, Frame } from "@craftjs/core"
+import { Editor } from "@craftjs/core"
 import {
-  CategoryBlock,
-  MainBlock,
+  ContainerBlock,
+  ImageBlock,
   ProductBlock,
-  TitleBlock,
+  TextBlock,
 } from "./craft/SelectionTools"
 import { Button } from "@/components/ui/button"
 import { Menu, X } from "lucide-react"
@@ -14,27 +14,28 @@ import { useState } from "react"
 import MenuEditor from "./menu-editor"
 import { ChatHeaderFiles } from "./chat-header-files"
 import { ChatHeader } from "./chat-header"
-import { MessageList } from "./message-list"
-import { MessageInput } from "./message-input"
 import MenuForm from "./menu-form"
+import Container from "./craft/Container"
+import Text from "./craft/Text"
+import ToolBarFiles from "./craft/ToolBarFiles"
+import ToolBarMenu from "./craft/ToolBarMenu"
 
-export default function TabsSection({
+export default function FilesMenuTabs({
   core,
   menu,
   setIsSidebarOpen,
   selectedConversation,
 }) {
   const [tab, setTab] = useState("files")
+
+  const resolver = {
+    TextBlock,
+    ImageBlock,
+    ContainerBlock,
+    ProductBlock,
+  }
   return (
-    <CraftEditor
-      resolver={{
-        Layout: core.Layout,
-        TitleBlock,
-        MainBlock,
-        CategoryBlock,
-        ProductBlock,
-      }}
-    >
+    <Editor resolver={resolver}>
       <Tabs value={tab} onValueChange={setTab} className="grow overflow-hidden">
         {/* Chat Panel - Flexible Width */}
         <div className="flex-1 flex flex-col min-w-0 bg-background h-full">
@@ -59,15 +60,14 @@ export default function TabsSection({
                   <TabsTrigger value="editor" className="cursor-pointer">
                     Menu
                   </TabsTrigger>
-                  <TabsTrigger value="local" className="cursor-pointer">
-                    Shops
-                  </TabsTrigger>
                 </TabsList>
 
                 {tab === "files" && (
-                  <ChatHeaderFiles id={selectedConversation} />
+                  <ToolBarFiles value="" css="" id={selectedConversation}/>
                 )}
-                {tab === "editor" && <ChatHeader id={selectedConversation} />}
+                {tab === "editor" && (
+                  <ToolBarMenu id={selectedConversation} menu={menu} css=""/>
+                )}
               </div>
             </div>
           </div>
@@ -104,6 +104,6 @@ export default function TabsSection({
           </div>
         </div>
       </Tabs>
-    </CraftEditor>
+    </Editor>
   )
 }
