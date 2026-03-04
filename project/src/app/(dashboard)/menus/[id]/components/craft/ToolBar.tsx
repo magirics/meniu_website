@@ -14,68 +14,52 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import styles from "./ToolBar.module.css"
 import { useEditor } from "@craftjs/core"
 import {
   BookOpen,
   Candy,
   Copy,
+  Image,
   MoreVertical,
   Rows3,
   Save,
+  SquareDashed,
   Trash,
   Type,
 } from "lucide-react"
 import {
-  CategoryBlock,
-  MainBlock,
+  ContainerBlock,
+  ImageBlock,
+  TextBlock,
   ProductBlock,
-  TitleBlock,
-} from "./SelectionTools"
-// import { createProduct } from "@/app/actions/product"
-// import { createMenu, removeMenu, updateMenu } from "@/actions/menu"
+} from "@/app/(dashboard)/code/[id]/components/craft/SelectionTools"
 import { minify } from "csso"
 import craftjs from "@craftjs/core/package.json"
+import { JSON_to_TSX } from "@/utils/transformers"
 
-export default function ToolBar({ value, css }) {
+export default function ToolBar({ menu, css }) {
   const { query, actions } = useEditor()
 
   const onSave = async () => {
-    const minifiedCss = minify(css).css
-    // await updateMenu({
-    //   ...value,
-    //   layout: { value: query.serialize(), version: craftjs.version },
-    //   style: minifiedCss,
-    // })
+    const json = JSON.parse(query.serialize())
+    const tsx = JSON_to_TSX(json)
+
+    const response = await fetch(`/api/layout/${menu.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify({
+        layout: tsx,
+      }),
+    })
+    console.log(response)
   }
 
   const onDuplicate = async () => {
-    // await createMenu({ ...value, name: value.name + " copia" })
+    console.log('onDuplicate')
   }
-
+  
   const onDelete = async () => {
-    // await removeMenu(value.id)
-  }
-
-  async function save(nodes, node) {
-    if (node.data.name === "ProductBlock") {
-      if (!node.data.props.value.id) {
-        // const id = await createProduct(node.data.props.value)
-        actions.setProp(node.id, (props) => {
-          props.value.id = id
-        })
-      }
-    }
-
-    for (const n of node.data.nodes) {
-      await save(nodes, nodes[n])
-    }
-  }
-
-  const handleSave = async () => {
-    const nodes = query.getNodes()
-    await save(nodes, nodes.ROOT)
-    await onSave()
+    console.log('onDelete')
   }
 
   return (
@@ -85,23 +69,48 @@ export default function ToolBar({ value, css }) {
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
+              <Dummy component={<TextBlock />} icon={Type}>
+                Text
+              </Dummy>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Text</p>
+            </TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Dummy component={<ImageBlock />} icon={Image}>
+                Image
+              </Dummy>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Image</p>
+            </TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Dummy
+                component={<Element is={<ContainerBlock />} canvas></Element>}
+                icon={SquareDashed}
+              >
+                Container
+              </Dummy>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Container</p>
+            </TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
               <Dummy component={<ProductBlock />} icon={Candy}>
                 Product
               </Dummy>
             </TooltipTrigger>
             <TooltipContent>
               <p>Product</p>
-            </TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Dummy component={<CategoryBlock />} icon={Rows3}>
-                Category
-              </Dummy>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Category</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -115,16 +124,19 @@ export default function ToolBar({ value, css }) {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             {/* <DropdownMenuItem onClick={} className="cursor-pointer"> */}
-            <DropdownMenuItem className="cursor-pointer">
+            <DropdownMenuItem className="cursor-pointer" onClick={onSave}>
               <Save className="h-4 w-4 mr-2" />
               Save
             </DropdownMenuItem>
-            <DropdownMenuItem className="cursor-pointer">
+            <DropdownMenuItem className="cursor-pointer" onClick={onDuplicate}>
               <Copy className="h-4 w-4 mr-2" />
               Duplicate
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="cursor-pointer text-destructive">
+            <DropdownMenuItem
+              className="cursor-pointer text-destructive"
+              onClick={onDelete}
+            >
               <Trash className="h-4 w-4 mr-2" />
               Delete
             </DropdownMenuItem>

@@ -1,22 +1,14 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
+import * as craft from "@craftjs/core"
 import { Menu, X } from "lucide-react"
-import {
-  CategoryBlock,
-  MainBlock,
-  ProductBlock,
-  TitleBlock,
-} from "./craft/SelectionTools"
-import { Editor as CraftEditor, Element, Frame } from "@craftjs/core"
+import { Editor as CraftEditor } from "@craftjs/core"
 
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ConversationList } from "./conversation-list"
-import { ChatHeader } from "./chat-header"
-import { MessageList } from "./message-list"
-import { MessageInput } from "./message-input"
 import {
   useChat,
   type Conversation,
@@ -26,6 +18,9 @@ import {
 } from "../use-chat"
 import MenuForm from "./menu-form"
 import MenuEditor from "./menu-editor"
+import ToolBar from "./craft/ToolBar"
+import * as Babel from "@babel/standalone"
+import { ContainerBlock, ImageBlock, TextBlock, ProductBlock } from "@/app/(dashboard)/code/[id]/components/craft/SelectionTools"
 
 interface ChatProps {
   conversations: Conversation[]
@@ -36,13 +31,8 @@ interface ChatProps {
 
 export function Chat({ conversations, messages, users, menus, id }: ChatProps) {
   const selectedConversation = id
-  const {
-    setConversations,
-    setMessages,
-    setUsers,
-    addMessage,
-    toggleMute,
-  } = useChat()
+  const { setConversations, setMessages, setUsers, addMessage, toggleMute } =
+    useChat()
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
@@ -89,6 +79,51 @@ export function Chat({ conversations, messages, users, menus, id }: ChatProps) {
 
   const [tab, setTab] = useState("settings")
 
+  const [menu, setMenu] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [core, setCore] = useState(null)
+
+  async function getMenu() {
+    const response = await fetch(`/api/menus/${selectedConversation}`)
+    const { item } = await response.json()
+    setMenu(item)
+    return item
+  }
+
+  async function getCore(menu) {
+    const page_tsx = menu.layout
+    const page_js = Babel.transform(page_tsx, { presets: ["react"] }).code
+    const main = eval(
+      `async (React, craft, components, files) => { ${page_js} return { Layout } }`
+    )
+
+    const components = {
+      TextBlock,
+      ImageBlock,
+      ContainerBlock,
+      ProductBlock,
+    }
+    const core = await main(React, craft, components, menu.files)
+    setCore(core)
+  }
+
+  async function getStuff() {
+    const menu = await getMenu()
+    await getCore(menu)
+    setLoading(false)
+  }
+
+  useEffect(() => {
+    getStuff()
+  }, [])
+
+  const resolver = {
+    TextBlock,
+    ImageBlock,
+    ContainerBlock,
+    ProductBlock,
+  }
+
   return (
     <TooltipProvider delayDuration={0}>
       <div className="min-h-[600px] max-h-[calc(100vh-220px)] flex rounded-lg border bg-background">
@@ -134,7 +169,7 @@ export function Chat({ conversations, messages, users, menus, id }: ChatProps) {
         </div>
 
         <CraftEditor
-          resolver={{ TitleBlock, MainBlock, CategoryBlock, ProductBlock }}
+          resolver={resolver}
         >
           <Tabs
             value={tab}
@@ -166,14 +201,14 @@ export function Chat({ conversations, messages, users, menus, id }: ChatProps) {
                       </TabsTrigger>
                     </TabsList>
 
-                    {tab === "editor" && <ChatHeader />}
+                    {tab === "editor" && <ToolBar menu={menu} css="" />}
                   </div>
                 </div>
               </div>
 
               {/* Messages */}
               <div className="flex-1 flex flex-col min-h-0 overflow-scroll">
-                {selectedConversation ? (
+                {menu ? (
                   <>
                     <TabsContent value="settings" className="m-0">
                       {/* <MailList items={mails} /> */}
@@ -181,7 +216,7 @@ export function Chat({ conversations, messages, users, menus, id }: ChatProps) {
                     </TabsContent>
                     <TabsContent value="editor" className="m-0">
                       {/* <MailList items={mails.filter((item) => !item.read)} /> */}
-                      <MenuEditor id={selectedConversation} />
+                      {loading ? 'Loading' : <MenuEditor menu={menu} core={core} />}
                     </TabsContent>
                   </>
                 ) : (
@@ -190,9 +225,7 @@ export function Chat({ conversations, messages, users, menus, id }: ChatProps) {
                       <h3 className="text-lg font-semibold mb-2">
                         Welcome to Chat
                       </h3>
-                      <p className="text-muted-foreground">
-                        Select a conversation to start messaging
-                      </p>
+                      <p className="text-muted-foreground">Loading menu</p>
                     </div>
                   </div>
                 )}
