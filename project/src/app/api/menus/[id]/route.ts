@@ -8,6 +8,7 @@ import {
   GetItemCommand,
   PutItemCommand,
   ScanCommand,
+  UpdateItemCommand,
 } from "@aws-sdk/client-dynamodb"
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb"
 import { NextResponse } from "next/server"
@@ -35,7 +36,7 @@ export const GET = withAuth(
   })
 )
 
-export const PUT = withAuth(
+export const PATCH = withAuth(
   withDatabase(async (request, context) => {
     const database = context.database as DynamoDBClient
     const { shopId } = context.auth
@@ -43,11 +44,25 @@ export const PUT = withAuth(
     const { item: itemValue } = await request.json()
     const item = { ...itemValue, id }
 
-    const output = new PutItemCommand({
+    const now = new Date().toISOString()
+    const key = { shopId, id }
+    const command = new UpdateItemCommand({
       TableName,
-      Item: marshall({ ...item, shopId, id }),
+      Key: marshall(key),
+      UpdateExpression:
+        "SET #name = :name, #description = :description, #updatedAt = :updatedAt",
+      ExpressionAttributeNames: {
+        "#name": "name",
+        "#description": "description",
+        "#updatedAt": "updatedAt",
+      },
+      ExpressionAttributeValues: marshall({
+        ":name": item.name,
+        ":description": item.description,
+        ":updatedAt": now,
+      }),
     })
-    await database.send(output)
+    const output = await database.send(command)
 
     return NextResponse.json({ item }, { status: 200 })
   })
@@ -56,10 +71,10 @@ export const PUT = withAuth(
 async function getMenu(shopId, id, context) {
   const database = context.database as DynamoDBClient
 
-    const command = await new GetItemCommand({
-      TableName,
-      Key: marshall({ shopId, id }),
-    })
+  const command = await new GetItemCommand({
+    TableName,
+    Key: marshall({ shopId, id }),
+  })
 
   const output = await database.send(command)
   if (!output.Item) {

@@ -6,13 +6,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import {
-  Copy,
-  MoreVertical,
-  Trash,
-} from "lucide-react"
+import { Copy, MoreVertical, Play, Trash } from "lucide-react"
 
-export default function Options({ onDuplicate, onDelete }) {
+export default function Options({ onDefault, onDuplicate, onDelete }) {
   return (
     <div className="flex items-center gap-1">
       <DropdownMenu>
@@ -22,6 +18,10 @@ export default function Options({ onDuplicate, onDelete }) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
+          <DropdownMenuItem className="cursor-pointer" onClick={onDefault}>
+            <Play className="h-4 w-4 mr-2" />
+            Set default
+          </DropdownMenuItem>
           <DropdownMenuItem className="cursor-pointer" onClick={onDuplicate}>
             <Copy className="h-4 w-4 mr-2" />
             Duplicate

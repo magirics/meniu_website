@@ -4,6 +4,7 @@ import {
   DynamoDBClient,
   GetItemCommand,
   PutItemCommand,
+  UpdateItemCommand,
 } from "@aws-sdk/client-dynamodb"
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb"
 import { NextResponse } from "next/server"
@@ -29,7 +30,7 @@ export const GET = withAuth(
   })
 )
 
-export const PUT = withAuth(
+export const PATCH = withAuth(
   withDatabase(async (request, context) => {
     const database = context.database as DynamoDBClient
     const auth = context.auth
@@ -40,8 +41,27 @@ export const PUT = withAuth(
     const now = new Date().toISOString()
     const item = { ...itemValue, shopId, updatedAt: now }
 
-    const Item = marshall(item)
-    const command = new PutItemCommand({ TableName, Item })
+    const key = { shopId }
+    const command = new UpdateItemCommand({
+      TableName,
+      Key: marshall(key),
+      UpdateExpression:
+        "SET #url = :url, #title = :title, #keywords = :keywords, #description = :description, #updatedAt = :updatedAt",
+      ExpressionAttributeNames: {
+        "#url": "url",
+        "#title": "title",
+        "#keywords": "keywords",
+        "#description": "description",
+        "#updatedAt": "updatedAt",
+      },
+      ExpressionAttributeValues: marshall({
+        ":url": item.url,
+        ":title": item.title,
+        ":keywords": item.keywords,
+        ":description": item.description,
+        ":updatedAt": now,
+      }),
+    })
     await database.send(command)
 
     return NextResponse.json({ item }, { status: 200 })

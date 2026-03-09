@@ -71,7 +71,7 @@ export default function UserSettingsPage() {
 
   async function onSubmit(data: UserFormValues) {
     const response = await fetch("/api/website", {
-      method: "PUT",
+      method: "PATCH",
       headers: {
         "Content-Type": "application/json",
       },

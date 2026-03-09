@@ -97,6 +97,15 @@ export function ConversationList({
 
   const router = useRouter()
 
+  const onDefault = async (id) => {
+    const response = await fetch(`/api/website/default`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    })
+    router.refresh()
+  }
+
   const onDuplicate = async (id) => {
     const response = await fetch(`/api/menus/${id}`, {
       method: "POST",
@@ -201,6 +210,7 @@ export function ConversationList({
                       {conversation.description}
                     </p>
                     <Options
+                      onDefault={() => onDefault(conversation.id)}
                       onDuplicate={() => onDuplicate(conversation.id)}
                       onDelete={() => onDelete(conversation.id)}
                     />

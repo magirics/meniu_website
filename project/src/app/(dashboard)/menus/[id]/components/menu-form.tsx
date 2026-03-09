@@ -126,14 +126,14 @@ export default function MenuForm({ id }) {
 
     const item = {
       ...data,
-      schedule: {
-        start: formatTime(fromValue),
-        end: formatTime(untilValue),
-      },
+      // schedule: {
+      //   start: formatTime(fromValue),
+      //   end: formatTime(untilValue),
+      // },
     }
 
     const response = fetch(`/api/menus/${id}`, {
-      method: "PUT",
+      method: "PATCH",
       headers: {
         "Content-Type": "applicacion/json",
       },
@@ -194,8 +194,8 @@ export default function MenuForm({ id }) {
 
               <Separator />
 
-              <Schedule value={fromValue} setValue={setFromValue} />
-              <Schedule value={untilValue} setValue={setUntilValue} />
+              {/* <Schedule value={fromValue} setValue={setFromValue} />
+              <Schedule value={untilValue} setValue={setUntilValue} /> */}
 
               {/* Action Buttons */}
               <div className="flex justify-start gap-3">

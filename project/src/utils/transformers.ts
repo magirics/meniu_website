@@ -25,6 +25,7 @@ function traverse(parent, json) {
     .map(([key, value]) => {
       if (typeof value == "number") return `${key} = ${value}`
       else if (typeof value == "string") return `${key} = "${value}"`
+      else if (typeof value == "object") return `${key} = {${JSON.stringify(value)}}`
     })
     .join(" ")
 

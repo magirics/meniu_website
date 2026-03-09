@@ -9,59 +9,47 @@ async function getPage(url, context) {
 
   const command = new ScanCommand({
     TableName: "Website",
-    ExpressionAttributeNames: { "#url": "url" },
     FilterExpression: "#url = :url",
+    ExpressionAttributeNames: { "#url": "url" },
     ExpressionAttributeValues: marshall({ ":url": url }),
   })
   const output = await database.send(command)
   const items = output.Items.map((item) => unmarshall(item))
-  return items[0].id
+  return items[0].shopId
 }
 
 // This function can be marked `async` if using `await` inside
 export const proxy = withDatabase(async (request: NextRequest, context) => {
-  // Add custom middleware logic here
-  // For example: authentication, redirects, etc.
+  // localhost || meniu.shop
+  // abcd1234.meniu.shop || my-restaurant.com
 
-  // subdomain
-  const host = request.headers.get("host")
-  const hostname = host?.split(":")[0] || ""
-  const parts = hostname.split(".")
+  const host = request.headers.get("host")!
+  const [domain, port] = host.split(":")
+  const [subdomain, secdomain, topdomain] = domain.split(".")
 
-  if ((hostname == "meniu.shop")) {
+  // console.log("host = ", host)
+  // console.log("[domain, port] = ", [domain, port])
+  // console.log("[subdomain, secdomain, topdomain]", [
+  //   subdomain,
+  //   secdomain,
+  //   topdomain,
+  // ])
+
+  if (host == "localhost" || host == "meniu.shop") {
     return NextResponse.next()
   }
 
-  // console.log("host = ", host)
-  // console.log("hostname = ", hostname)
-  // console.log("parts = ", parts)
-
-  let subdomain = ""
-  if (parts.length > 2) {
-    // it's a subdomain
-    subdomain = parts.slice(0, parts.length - 2).join(".")
-    const id = await getPage(subdomain, context)
-
-    // FIX
-    // const url = `http://localhost:3000/shop/${id}`
-    const url = `http://localhost:3000/`
-
-    console.log("url =", url)
-    return NextResponse.rewrite(url)
-  } else {
-    // 'its a domain'
-    const domain = hostname
+  if (subdomain && secdomain && topdomain) {
     const id = await getPage(domain, context)
 
-    // FIX
-    // const url = `http://localhost:3000/shop/${id}`
-    const url = `http://localhost:3000/`
+    // FIX: use https for production
+    const url = `http://meniu.shop/shops/${id}`
+    // console.log("url =", url)
 
-    console.log("url =", url)
     return NextResponse.rewrite(url)
   }
 
-  return NextResponse.next()
+  return NextResponse.error()
 })
 
 // See "Matching Paths" below to learn more

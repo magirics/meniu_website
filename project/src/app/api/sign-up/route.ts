@@ -105,30 +105,12 @@ export const POST = withDatabase(async (request, context) => {
     await database.send(command)
   }
 
-  // Website
-  {
-    const url = generateURL()
-    const website = {
-      shopId,
-      url,
-      freeUrl: url,
-      title: shop,
-      description: "Check out our menu and find your next favorite dish today!",
-      keywords: "menu, restaurant, food, dishes, online ordering",
-      scheduled: [],
-    }
-    const item = { ...website, createdAt: now, updatedAt: now }
-
-    const Item = marshall(item)
-    const command = new PutItemCommand({ TableName: "Website", Item })
-    await database.send(command)
-  }
-
   // Menu
+  const defaultMenu = generateId()
   {
     const menu = {
       shopId,
-      id: generateId(),
+      id: defaultMenu,
       name: "First menu",
       description: "My first menu",
       files: [],
@@ -137,6 +119,27 @@ export const POST = withDatabase(async (request, context) => {
 
     const Item = marshall(item)
     const command = new PutItemCommand({ TableName: "Menu", Item })
+    await database.send(command)
+  }
+
+  // Website
+  {
+    const url = generateURL()
+    const website = {
+      shopId,
+      url,
+      title: shop,
+      description: "Check out our menu and find your next favorite dish today!",
+      keywords: "menu, restaurant, food, dishes, online ordering",
+      
+      generatedUrl: url,
+      defaultMenu: defaultMenu,
+      scheduledMenus: [],
+    }
+    const item = { ...website, createdAt: now, updatedAt: now }
+
+    const Item = marshall(item)
+    const command = new PutItemCommand({ TableName: "Website", Item })
     await database.send(command)
   }
 
