@@ -1,5 +1,6 @@
 .root {
   position: relative;
+  display: contents;
 }
 
 .tools {

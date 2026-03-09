@@ -43,15 +43,14 @@ export default function ToolBar({ menu, css }) {
   const onSave = async () => {
     const json = JSON.parse(query.serialize())
     const tsx = JSON_to_TSX(json)
-    console.log(tsx)
 
-    // const response = await fetch(`/api/layout/${menu.id}`, {
-    //   method: "PATCH",
-    //   headers: { "Content-Type": "text/plain" },
-    //   body: JSON.stringify({
-    //     layout: tsx,
-    //   }),
-    // })
+    const response = await fetch(`/api/layout/${menu.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify({
+        layout: tsx,
+      }),
+    })
   }
 
   const onDuplicate = async () => {

@@ -15,7 +15,7 @@ async function getPage(url, context) {
   })
   const output = await database.send(command)
   const items = output.Items.map((item) => unmarshall(item))
-  return items[0].shopId
+  return items[0].defaultMenu
 }
 
 // This function can be marked `async` if using `await` inside

@@ -16,7 +16,7 @@ const getMenu = async (id) => {
   "use server"
   const command = new ScanCommand({
     TableName: "Menu",
-    FilterExpression: "shopId = :id",
+    FilterExpression: "id = :id",
     ExpressionAttributeValues: marshall({ ":id": id }),
   })
 

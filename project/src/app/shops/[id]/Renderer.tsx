@@ -11,7 +11,6 @@ import * as Babel from "@babel/standalone"
 export default async function Renderer({ menu }) {
   const page_tsx = menu.layout
   const page_js = Babel.transform(page_tsx, { presets: ["react"] }).code
-  console.log(page_tsx)
   const main = eval(
     `async (React, craft, components, files) => { ${page_js} return { Layout } }`
   )

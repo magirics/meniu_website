@@ -8,6 +8,7 @@ export default function Text({ value, onChange, ...props }) {
 
   return (
     <div
+      className="contents"
       ref={(ref) => {
         connect(drag(ref))
       }}
