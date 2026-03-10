@@ -35,7 +35,11 @@ export const proxy = withDatabase(async (request: NextRequest, context) => {
   //   topdomain,
   // ])
 
-  if (host == "localhost" || host == "meniu.shop") {
+  if (
+    host == "localhost" ||
+    host == "meniu.shop" ||
+    host.endsWith(".amplifyapp.com")
+  ) {
     return NextResponse.next()
   }
 
