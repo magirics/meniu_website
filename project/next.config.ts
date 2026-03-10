@@ -10,6 +10,12 @@ const nextConfig: NextConfig = {
   },
   turbopack: {},
 
+  env: {
+    NEXT_PUBLIC_AWS_REGION: 'sa-east-1',
+    AMZ_ACCESS_KEY_ID: 'AKIARSU7K3WRW343JHJW',
+    AMZ_SECRET_ACCESS_KEY: '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'
+  },
+
   // Image optimization
   images: {
     remotePatterns: [
